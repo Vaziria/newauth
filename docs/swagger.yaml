@@ -1,0 +1,134 @@
+basePath: /
+definitions:
+  apis.AcceptResetPassword:
+    properties:
+      key:
+        type: string
+      newPassword:
+        type: string
+    type: object
+  apis.ApiResponse:
+    properties:
+      code:
+        type: string
+      data:
+        additionalProperties:
+          type: string
+        type: object
+      message:
+        type: string
+    type: object
+  apis.LoginPayload:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  apis.ResetPassword:
+    properties:
+      email:
+        type: string
+    type: object
+  apis.ResetPasswordRes:
+    properties:
+      code:
+        type: string
+      data:
+        additionalProperties:
+          type: string
+        type: object
+      key:
+        type: string
+      message:
+        type: string
+    type: object
+  models.User:
+    type: object
+host: localhost:5000
+info:
+  contact: {}
+  title: Authentification API documentation
+  version: 1.0.0
+paths:
+  /accept_reset_pwd:
+    post:
+      consumes:
+      - application/json
+      description: Reset Password Request pertama
+      parameters:
+      - description: reset
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/apis.AcceptResetPassword'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/apis.ApiResponse'
+      summary: Reset Password
+      tags:
+      - Users
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Login user
+      parameters:
+      - description: User Data
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/apis.LoginPayload'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/apis.ApiResponse'
+      summary: Login user
+      tags:
+      - Users
+  /register:
+    post:
+      consumes:
+      - application/json
+      description: Create new user
+      parameters:
+      - description: User Data
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.User'
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+      summary: Create new user based on paramters
+      tags:
+      - Users
+  /reset_pwd:
+    post:
+      consumes:
+      - application/json
+      description: Reset Password Request pertama
+      parameters:
+      - description: User Data
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/apis.ResetPassword'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/apis.ResetPasswordRes'
+      summary: Reset Password
+      tags:
+      - Users
+swagger: "2.0"

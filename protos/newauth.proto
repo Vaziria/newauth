@@ -1,0 +1,14 @@
+syntax ="proto3";
+
+option go_package ="newauth/";
+
+
+
+message Payload {
+    string name = 1;
+}
+
+
+service UserService {
+    rpc TestService(Payload) returns (Payload);
+}
