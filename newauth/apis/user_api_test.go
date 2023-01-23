@@ -13,6 +13,7 @@ import (
 	"github.com/PDC-Repository/newauth/newauth/models"
 	"github.com/PDC-Repository/newauth/scenario"
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/appengine/aetest"
 	"gorm.io/gorm"
 )
 
@@ -90,13 +91,19 @@ func TestLogin(t *testing.T) {
 }
 
 func TestCreateResetPassword(t *testing.T) {
-	var resDat apis.ResetPasswordRes
+	inst, err := aetest.NewInstance(nil)
+
+	if err != nil {
+		t.Fatalf("Failed to create instance: %v", err)
+	}
 
 	scen := scenario.CreateUserScenario()
 	webSchen := scenario.NewWebScenario()
+	webSchen.Inst = inst
 
 	defer scen.TearDown()
 	defer webSchen.TearDown()
+	defer inst.Close()
 
 	// oldpass := scen.User.Password
 	payload := apis.ResetPassword{
@@ -104,14 +111,16 @@ func TestCreateResetPassword(t *testing.T) {
 	}
 
 	res := webSchen.Req(http.MethodPost, "/reset_pwd", payload)
-	res.Decode(&resDat)
 
 	code := res.Rec.Result().StatusCode
 	assert.Equal(t, code, http.StatusOK, "status create error")
 
 	t.Run("testing accept reset password", func(t *testing.T) {
+
+		key := apis.CreateResetPwdKey(scen.User)
+
 		payload := apis.AcceptResetPassword{
-			Key:         resDat.Key,
+			Key:         key,
 			NewPassword: "kampret",
 		}
 
@@ -127,5 +136,24 @@ func TestCreateResetPassword(t *testing.T) {
 		assert.Equal(t, code, http.StatusOK, "accept reset error")
 
 	})
+
+}
+
+func TestUserList(t *testing.T) {
+	webSchen := scenario.NewWebScenario()
+	inst, err := aetest.NewInstance(nil)
+
+	if err != nil {
+		t.Fatalf("Failed to create instance: %v", err)
+	}
+
+	webSchen.Inst = inst
+
+	defer webSchen.TearDown()
+
+	res := webSchen.Req(http.MethodGet, "/user_search", nil)
+
+	code := res.Rec.Result().StatusCode
+	assert.Equal(t, code, http.StatusOK, "success 200")
 
 }

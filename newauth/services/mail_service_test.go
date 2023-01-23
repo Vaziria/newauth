@@ -6,11 +6,11 @@ import (
 
 	"github.com/PDC-Repository/newauth/newauth/services"
 	"github.com/PDC-Repository/newauth/scenario"
-
 	"google.golang.org/appengine/aetest"
 )
 
 func TestSendMail(t *testing.T) {
+
 	srv := services.NewMailService()
 
 	userScen := scenario.CreateUserScenario()

@@ -36,10 +36,6 @@ func upAddBase(tx *sql.Tx) error {
 			description TEXT
 		);
 
-		CREATE TABLE permissions (
-			id SERIAL PRIMARY KEY,
-			key VARCHAR(1000) not NULL UNIQUE
-		);
 
 	`)
 
@@ -55,7 +51,6 @@ func downAddBase(tx *sql.Tx) error {
 	_, err := tx.Exec(`
 		DROP TABLE users;
 		DROP TABLE teams;
-		DROP TABLE permissions;
 	`)
 
 	if err != nil {

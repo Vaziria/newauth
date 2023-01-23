@@ -7,11 +7,14 @@ import (
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"time"
 
 	"github.com/PDC-Repository/newauth/newauth"
 	"github.com/PDC-Repository/newauth/newauth/models"
+	"github.com/glebarez/sqlite"
 	"github.com/google/uuid"
+	"google.golang.org/appengine/aetest"
 	"gorm.io/gorm"
 )
 
@@ -25,12 +28,17 @@ type ResResult struct {
 
 func (res *ResResult) Decode(v any) {
 	data, _ := io.ReadAll(res.Rec.Body)
-	json.Unmarshal(data, v)
+	err := json.Unmarshal(data, v)
+	if err != nil {
+		panic("parse error")
+	}
+
 }
 
 type WebSchenario struct {
 	Scenario
-	app *newauth.Application
+	app  *newauth.Application
+	Inst aetest.Instance
 }
 
 func (scen *WebSchenario) ExecuteReq(req *http.Request) *httptest.ResponseRecorder {
@@ -40,9 +48,15 @@ func (scen *WebSchenario) ExecuteReq(req *http.Request) *httptest.ResponseRecord
 }
 
 func (scen *WebSchenario) Req(method string, path string, payload any) *ResResult {
+	var req *http.Request
 
-	data, _ := json.Marshal(&payload)
-	req, _ := http.NewRequest(method, path, bytes.NewReader(data))
+	if payload != nil {
+		data, _ := json.Marshal(&payload)
+		req, _ = scen.Inst.NewRequest(method, path, bytes.NewReader(data))
+	} else {
+
+		req, _ = scen.Inst.NewRequest(method, path, nil)
+	}
 
 	res := scen.ExecuteReq(req)
 
@@ -52,6 +66,7 @@ func (scen *WebSchenario) Req(method string, path string, payload any) *ResResul
 }
 
 func NewWebScenario() *WebSchenario {
+
 	app, err := newauth.InitializeApplication()
 
 	if err != nil {
@@ -61,7 +76,9 @@ func NewWebScenario() *WebSchenario {
 		app: app,
 	}
 
-	scen.TearDown = func() {}
+	scen.TearDown = func() {
+		// inst.Close()
+	}
 
 	return &scen
 }
@@ -108,4 +125,17 @@ func NewUserScenario(db *gorm.DB) UserScenario {
 
 	return scenario
 
+}
+
+func SqliteDatabaseScenario() (*gorm.DB, func()) {
+	fname := "database_test.db"
+
+	db, err := gorm.Open(sqlite.Open(fname), &gorm.Config{})
+	if err != nil {
+		panic("failed to connect database")
+	}
+
+	return db, func() {
+		os.Remove(fname)
+	}
 }

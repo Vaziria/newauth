@@ -21,3 +21,5 @@ up migration
 # documentation
 
 - https://github.com/swaggo/swag
+- https://github.com/alexedwards/scs
+- https://articles.wesionary.team/understanding-casbin-with-different-access-control-model-configurations-faebc60f6da5

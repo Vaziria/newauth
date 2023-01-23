@@ -26,7 +26,7 @@ func main() {
 		panic(err)
 	}
 
-	log.Println("starting server at 8080")
-	panic(http.ListenAndServe("127.0.0.1:8080", app.Router))
+	log.Println("starting server at 8081")
+	panic(http.ListenAndServe("127.0.0.1:8081", app.Router))
 
 }

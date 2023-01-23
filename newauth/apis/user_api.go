@@ -7,6 +7,7 @@ import (
 	"github.com/PDC-Repository/newauth/newauth/models"
 	"github.com/PDC-Repository/newauth/newauth/services"
 	"github.com/go-playground/validator/v10"
+	"github.com/gorilla/schema"
 	"gorm.io/gorm"
 )
 
@@ -153,7 +154,7 @@ type ResetPasswordRes struct {
 // @Tags Users
 // @Accept json
 // @Param user body ResetPassword true "User Data"
-// @Success 200 {object} ResetPasswordRes
+// @Success 200 {object} ApiResponse
 // @Router /reset_pwd [post]
 func (api *UserApi) ResetPassword(w http.ResponseWriter, req *http.Request) {
 
@@ -178,11 +179,9 @@ func (api *UserApi) ResetPassword(w http.ResponseWriter, req *http.Request) {
 
 	key := CreateResetPwdKey(&user)
 
-	res := &ResetPasswordRes{
-		Key: key,
-	}
+	api.mailSrv.SendResetEmail(user.Email, key, req)
 
-	SetResponse(http.StatusOK, w, res)
+	SetSuccessResponse(w)
 
 }
 
@@ -244,6 +243,61 @@ func (api *UserApi) AcceptResetPassword(w http.ResponseWriter, req *http.Request
 	}
 
 	SetSuccessResponse(w)
+}
+
+type UserListQuery struct {
+	Query string `schema:"q"`
+}
+
+type searchUser struct {
+	ID   uint   `json:"id" gorm:"primarykey"`
+	Name string `json:"name" validate:"required"`
+}
+
+type searchUserListRes struct {
+	ApiResponse
+	Data []*searchUser
+}
+
+// List User ... List User
+// @Summary List User
+// @Description List User
+// @Tags Users
+// @Accept json
+// @Param user body AcceptResetPassword true "reset"
+// @Success 200 {object} ApiResponse
+// @Router /search_user [get]
+func (api *UserApi) GetUserList(w http.ResponseWriter, req *http.Request) {
+	var query UserListQuery
+
+	if err := schema.NewDecoder().Decode(&query, req.Form); err != nil {
+		SetError(w, &ApiResponse{
+			Code:    "query_error",
+			Message: "query error",
+		})
+
+		return
+	}
+
+	res := searchUserListRes{}
+
+	var err error
+	if query.Query == "" {
+		err = api.db.Model(&models.User{}).Find(&res.Data).Error
+	} else {
+		err = api.db.Where("username ILIKE ?", "%"+query.Query+"%").Find(&res.Data).Error
+	}
+
+	if err != nil {
+		SetError(w, &ApiResponse{
+			Code:    "get_list_user_error",
+			Message: "tidak bisa list user",
+		})
+
+	}
+
+	SetResponse(http.StatusOK, w, res)
+
 }
 
 func NewUserApi(db *gorm.DB, mailsrv *services.MailService) *UserApi {
