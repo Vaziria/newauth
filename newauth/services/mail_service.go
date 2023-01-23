@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"net/http"
 
-	"appengine"
-	"appengine/log"
-	"appengine/mail"
+	"google.golang.org/appengine/v2"
+	"google.golang.org/appengine/v2/log"
+	"google.golang.org/appengine/v2/mail"
 )
 
 type MailService struct{}

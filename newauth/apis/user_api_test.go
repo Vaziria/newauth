@@ -13,7 +13,7 @@ import (
 	"github.com/PDC-Repository/newauth/newauth/models"
 	"github.com/PDC-Repository/newauth/scenario"
 	"github.com/stretchr/testify/assert"
-	"google.golang.org/appengine/aetest"
+	"google.golang.org/appengine/v2/aetest"
 	"gorm.io/gorm"
 )
 

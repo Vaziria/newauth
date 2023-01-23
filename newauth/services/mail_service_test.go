@@ -6,7 +6,7 @@ import (
 
 	"github.com/PDC-Repository/newauth/newauth/services"
 	"github.com/PDC-Repository/newauth/scenario"
-	"google.golang.org/appengine/aetest"
+	"google.golang.org/appengine/v2/aetest"
 )
 
 func TestSendMail(t *testing.T) {

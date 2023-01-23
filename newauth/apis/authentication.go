@@ -127,16 +127,28 @@ func DecodeToken(tokenstring string) (*JwtData, error) {
 	return &data, nil
 }
 
-func JwtFromHttp(r *http.Request) (*JwtData, error) {
+func JwtFromHttp(w http.ResponseWriter, r *http.Request) (*JwtData, error) {
 	for _, cookie := range r.Cookies() {
 
 		if cookie.Name == "PD_T" {
 			tokenString := cookie.Value
 			jwt, err := DecodeToken(tokenString)
+
+			if err != nil {
+
+				SetResponse(http.StatusUnauthorized, w, ApiResponse{
+					Code: "cookie_error",
+				})
+			}
+
 			return jwt, err
 		}
 
 	}
+
+	SetResponse(http.StatusUnauthorized, w, ApiResponse{
+		Code: "not_login",
+	})
 
 	return nil, errors.New("cookies jwt not found")
 }

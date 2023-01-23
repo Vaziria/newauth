@@ -8,7 +8,9 @@ package newauth
 
 import (
 	"github.com/PDC-Repository/newauth/newauth/apis"
+	"github.com/PDC-Repository/newauth/newauth/authorize"
 	"github.com/PDC-Repository/newauth/newauth/services"
+	"github.com/go-playground/validator/v10"
 )
 
 // Injectors from wire.go:
@@ -18,7 +20,10 @@ func InitializeApplication() (*Application, error) {
 	mailService := services.NewMailService()
 	userApi := apis.NewUserApi(db, mailService)
 	teamApi := apis.NewTeamApi()
-	router, err := NewRouter(db, userApi, teamApi)
+	authorizeAuthorize := authorize.NewAuthorize(db)
+	validate := validator.New()
+	authorizeApi := apis.NewAuthorizeApi(authorizeAuthorize, validate)
+	router, err := NewRouter(db, userApi, teamApi, authorizeApi)
 	if err != nil {
 		return nil, err
 	}
