@@ -26,9 +26,14 @@ func NewRouter(
 	authorizeR.HandleFunc("/user", authorizeApi.SetRoleApi).Methods(http.MethodPost)
 	authorizeR.HandleFunc("/info", authorizeApi.InfoRoleApi).Methods(http.MethodGet)
 
-	// user_r := r.PathPrefix("/user").Subrouter()
+	teamR := r.PathPrefix("/team").Subrouter()
+	teamR.HandleFunc("", teamApi.CreateTeam).Methods(http.MethodPost)
+	teamR.HandleFunc("", teamApi.DeleteTeam).Methods(http.MethodDelete)
+	teamR.HandleFunc("", teamApi.UpdateTeam).Methods(http.MethodPut)
+	teamR.HandleFunc("", teamApi.ListTeam).Methods(http.MethodGet)
+	teamR.HandleFunc("/user", teamApi.RemoveUser).Methods(http.MethodDelete)
 
-	// team_r := r.PathPrefix("/team").Subrouter()
+	// user_r := r.PathPrefix("/user").Subrouter()
 
 	return r, nil
 }

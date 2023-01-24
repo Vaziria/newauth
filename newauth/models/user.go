@@ -18,7 +18,7 @@ type User struct {
 	Verified  bool `json:"verified"`
 	LastReset time.Time
 
-	// Teams []*Team `gorm:"many2many:user_teams;"`
+	Teams []*Team `gorm:"many2many:user_teams;"`
 
 	// UserAccess []UserPermission
 }

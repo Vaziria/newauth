@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/PDC-Repository/newauth/config"
+	"github.com/PDC-Repository/newauth/newauth/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -12,8 +13,19 @@ import (
 var DB *gorm.DB
 var dbOnce sync.Once
 
-func NewDatabase() *gorm.DB {
+func AutoMigrate(db *gorm.DB) {
+	err := db.AutoMigrate(
+		&models.User{},
+		&models.Team{},
+		&models.UserTeam{},
+	)
 
+	if err != nil {
+		panic(err)
+	}
+}
+
+func NewDatabase() *gorm.DB {
 	dbOnce.Do(func() {
 		log.Println("initialize database")
 		db, err := gorm.Open(postgres.Open(config.DatabaseUri), &gorm.Config{})
@@ -21,7 +33,7 @@ func NewDatabase() *gorm.DB {
 		if err != nil {
 			panic(err)
 		}
-
+		AutoMigrate(db)
 		DB = db
 	})
 

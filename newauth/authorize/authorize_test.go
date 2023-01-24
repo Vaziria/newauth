@@ -11,7 +11,7 @@ import (
 
 func TestAuthorize(t *testing.T) {
 	db := newauth.NewDatabase()
-	root, tRoot := scenario.NewRootUserScenario(db)
+	root, tRoot := scenario.NewRoleUserScenario(db, authorize.RootRole)
 	defer tRoot()
 
 	auth := authorize.NewAuthorize(db)

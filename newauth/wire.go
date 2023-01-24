@@ -9,18 +9,20 @@ import (
 	"github.com/PDC-Repository/newauth/newauth/services"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/wire"
+	"github.com/gorilla/schema"
 )
 
 func InitializeApplication() (*Application, error) {
 	wire.Build(
 		NewApplication,
 		NewRouter,
-		apis.NewTeamApi,
 		apis.NewUserApi,
 		apis.NewAuthorizeApi,
+		apis.NewTeamApi,
 		authorize.NewAuthorize,
 		services.NewMailService,
 		NewDatabase,
+		schema.NewDecoder,
 		validator.New,
 	)
 

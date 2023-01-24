@@ -50,7 +50,6 @@ func Exist(data RoleEnum, list []RoleEnum) bool {
 }
 
 type Authorize struct {
-	Team *AcEnforcer
 	Role *AcEnforcer
 }
 
@@ -107,9 +106,8 @@ var once = sync.Once{}
 
 func NewAuthorize(db *gorm.DB) *Authorize {
 	roleEnforcer := NewModelEnfocer(db, string(RoleResource))
-	teamEnforcer := NewModelEnfocer(db, string(TeamResource))
 
-	teamEnforcer.En.AddPolicies([][]string{
+	roleEnforcer.En.AddPolicies([][]string{
 		{string(RootRole), string(TeamResource), string(ActBasicDelete)},
 		{string(RootRole), string(TeamResource), string(ActBasicUpdate)},
 		{string(RootRole), string(TeamResource), string(ActBasicWrite)},
@@ -134,7 +132,6 @@ func NewAuthorize(db *gorm.DB) *Authorize {
 
 	once.Do(func() {
 		author = Authorize{
-			Team: teamEnforcer,
 			Role: roleEnforcer,
 		}
 	})

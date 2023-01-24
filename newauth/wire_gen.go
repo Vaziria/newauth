@@ -11,6 +11,7 @@ import (
 	"github.com/PDC-Repository/newauth/newauth/authorize"
 	"github.com/PDC-Repository/newauth/newauth/services"
 	"github.com/go-playground/validator/v10"
+	"github.com/gorilla/schema"
 )
 
 // Injectors from wire.go:
@@ -19,9 +20,10 @@ func InitializeApplication() (*Application, error) {
 	db := NewDatabase()
 	mailService := services.NewMailService()
 	userApi := apis.NewUserApi(db, mailService)
-	teamApi := apis.NewTeamApi()
 	authorizeAuthorize := authorize.NewAuthorize(db)
+	decoder := schema.NewDecoder()
 	validate := validator.New()
+	teamApi := apis.NewTeamApi(authorizeAuthorize, db, decoder, validate)
 	authorizeApi := apis.NewAuthorizeApi(authorizeAuthorize, validate)
 	router, err := NewRouter(db, userApi, teamApi, authorizeApi)
 	if err != nil {

@@ -173,14 +173,14 @@ func NewUserScenario(db *gorm.DB) UserScenario {
 
 }
 
-func NewRootUserScenario(db *gorm.DB) (*models.User, func()) {
+func NewRoleUserScenario(db *gorm.DB, role authorize.RoleEnum) (*models.User, func()) {
 	scen := NewUserScenario(db)
 
 	auth := authorize.NewAuthorize(db)
 	user := scen.User
 
 	userstr := strconv.FormatUint(uint64(user.ID), 10)
-	cek, err := auth.Role.En.AddRoleForUser(userstr, string(authorize.RootRole), authorize.ActRoleSet)
+	cek, err := auth.Role.En.AddRoleForUser(userstr, string(role), authorize.ActRoleSet)
 
 	data := auth.UserCanSetRoleList(user.ID)
 	log.Println(cek, "asdasdasda", data, user.ID)

@@ -16,7 +16,7 @@ func TestAuthorizeApi(t *testing.T) {
 	db := newauth.NewDatabase()
 	api, tearDownApp := scenario.NewPlainWebScenario()
 
-	rootUser, tRootuser := scenario.NewRootUserScenario(db)
+	rootUser, tRootuser := scenario.NewRoleUserScenario(db, authorize.RootRole)
 	scen := scenario.NewUserScenario(db)
 	defer scen.TearDown()
 	defer tRootuser()

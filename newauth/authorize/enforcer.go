@@ -39,8 +39,8 @@ func (en *AcEnforcer) Access(userid uint, resource ResourceEnum, resourceid uint
 		item := strconv.FormatUint(uint64(resourceid), 10)
 		resitem = resitem + item
 	}
-
-	return en.En.Enforce(user, resitem, acc)
+	log.Println("chekc access", user, resitem, acc)
+	return en.En.Enforce(string(user), string(resitem), string(acc))
 }
 
 func (en *AcEnforcer) AddTeamRole(teamid uint, userid uint, role RoleEnum) {

@@ -25,6 +25,17 @@ func TestEnforcer(t *testing.T) {
 	assert.Nil(t, err)
 	assert.True(t, ok)
 
+	t.Run("test func access", func(t *testing.T) {
+		_, err := enforcer.En.AddPolicy(string(authorize.OwnerRole), string(authorize.TeamResource), string(authorize.ActBasicView))
+
+		assert.Nil(t, err, "add policy tidak ada error")
+
+		enforcer.En.AddRoleForUser("7", string(authorize.OwnerRole))
+		ok, _ := enforcer.Access(7, authorize.TeamResource, 0, authorize.ActBasicView)
+
+		assert.True(t, ok, "harus true accessnya")
+	})
+
 	// ok, err := en.Enforce("admin23", "model2", "read")
 
 	// assert.Nil(t, err)

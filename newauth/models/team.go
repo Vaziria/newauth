@@ -1,10 +1,26 @@
 package models
 
-import "gorm.io/gorm"
+import (
+	"github.com/PDC-Repository/newauth/newauth/authorize"
+)
 
 type Team struct {
-	gorm.Model
-	Name        string
-	Description string
-	Users       []*User `gorm:"many2many:user_teams;"`
+	ID          uint    `gorm:"primarykey" json:"id"`
+	Name        string  `json:"name"`
+	Description string  `json:"description"`
+	Users       []*User `gorm:"many2many:user_teams;" json:"users"`
+}
+
+func (user *Team) TableName() string {
+	return "teams"
+}
+
+type UserTeam struct {
+	UserID uint `gorm:"index:unique_user,unique"`
+	TeamID uint `gorm:"index:unique_user,unique"`
+	Role   authorize.RoleEnum
+}
+
+func (user *UserTeam) TableName() string {
+	return "user_teams"
 }
