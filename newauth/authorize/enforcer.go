@@ -2,7 +2,6 @@ package authorize
 
 import (
 	"log"
-	"strconv"
 
 	"github.com/casbin/casbin/v2"
 	"github.com/casbin/casbin/v2/model"
@@ -10,84 +9,103 @@ import (
 	"gorm.io/gorm"
 )
 
-type TeamItemPolicy map[RoleEnum][]ActBasicEnum
+type Domain string
 
-func NewTeamItemPolicy() TeamItemPolicy {
-	return TeamItemPolicy{
-		RootRole:   {ActBasicView, ActBasicDelete, ActBasicUpdate, ActBasicWrite},
-		OwnerRole:  {ActBasicView, ActBasicDelete, ActBasicUpdate, ActBasicWrite},
-		LeaderRole: {ActBasicView, ActBasicUpdate},
-		CsRole:     {ActBasicView},
+const (
+	RootDomain Domain = "rdom"
+)
+
+type Effect string
+
+const (
+	AllowEffect Effect = "allow"
+	DenyEffect  Effect = "deny"
+)
+
+type RoleEnum string
+
+const (
+	RootRole   RoleEnum = "root"
+	OwnerRole  RoleEnum = "own"
+	LeaderRole RoleEnum = "lead"
+	DeviceRole RoleEnum = "dev"
+	CsRole     RoleEnum = "cs"
+)
+
+type ActBasicEnum string
+
+const (
+	ActBasicAll    ActBasicEnum = "all"
+	ActBasicWrite  ActBasicEnum = "write"
+	ActBasicUpdate ActBasicEnum = "update"
+	ActBasicDelete ActBasicEnum = "delete"
+	ActBasicView   ActBasicEnum = "view"
+	ActBasicLogin  ActBasicEnum = "login"
+)
+
+type ResourceEnum string
+
+const (
+	RoleResource    ResourceEnum = "role"
+	TeamResource    ResourceEnum = "team"
+	BotResource     ResourceEnum = "bot"
+	BlockerResource ResourceEnum = "block"
+)
+
+type RootResourcePolicy map[ResourceEnum][]ActBasicEnum
+type RootDomainPolicy map[RoleEnum]RootResourcePolicy
+
+type ResourcePolicy map[string][]ActBasicEnum
+type DomainPolicy map[RoleEnum]ResourcePolicy
+
+func NewRootDomainPolicy() *RootDomainPolicy {
+	return &RootDomainPolicy{
+		RootRole: RootResourcePolicy{
+			RoleResource: {ActBasicView, ActBasicDelete, ActBasicUpdate, ActBasicWrite},
+			TeamResource: {ActBasicView, ActBasicDelete, ActBasicUpdate, ActBasicWrite},
+			BotResource:  {ActBasicView, ActBasicDelete, ActBasicUpdate, ActBasicWrite},
+		},
+		OwnerRole: RootResourcePolicy{
+			TeamResource: {ActBasicView, ActBasicWrite},
+			BotResource:  {ActBasicView},
+		},
 	}
 }
 
-type AcEnforcer struct {
-	Name string
-	En   *casbin.Enforcer
+type Enforcer struct {
+	forcer *casbin.Enforcer
 }
 
-func (sus *AcEnforcer) SuspendDevice() {}
-func (sus *AcEnforcer) SuspendUser()   {}
-func (sus *AcEnforcer) SuspendTeam()   {}
+func (en *Enforcer) GetDomain(domainID uint) *DomainEnforcer {
 
-func (en *AcEnforcer) teamModel(teamid uint) string {
-	objname := strconv.FormatUint(uint64(teamid), 10)
-	return string(TeamResource) + string(objname)
-}
-
-func (en *AcEnforcer) Access(userid uint, resource ResourceEnum, resourceid uint, acc ActBasicEnum) (bool, error) {
-	user := strconv.FormatUint(uint64(userid), 10)
-	resitem := string(resource)
-
-	if resourceid != 0 {
-		item := strconv.FormatUint(uint64(resourceid), 10)
-		resitem = resitem + item
+	return &DomainEnforcer{
+		ID:         domainID,
+		DomainName: DomainName(domainID),
+		forcer:     en.forcer,
 	}
-	return en.En.Enforce(string(user), string(resitem), string(acc))
 }
 
-func (en *AcEnforcer) AddTeamRole(teamid uint, userid uint, role RoleEnum) {
-	user := strconv.FormatUint(uint64(userid), 10)
-	team := en.teamModel(teamid)
+// func (en *Enforcer) GetRootDomain() IDomainEnforcer {
+// 	return &RootDomainEnforcer{
+// 		ID:         0,
+// 		DomainName: string(RootDomain),
+// 		forcer:     en.forcer,
+// 	}
+// }
 
-	rolePolicies := NewTeamItemPolicy()
-	policies := rolePolicies[role]
+func (en *Enforcer) DeleteDomain(domainID uint) {
+	forcer := en.forcer
 
-	mapPolicies := make([][]string, len(policies))
-
-	for ind, policy := range policies {
-		mapPolicies[ind] = []string{user, team, string(policy)}
-	}
-
-	_, err := en.En.AddPolicies(mapPolicies)
-
+	domainName := DomainName(domainID)
+	_, err := forcer.DeleteDomains(domainName)
 	if err != nil {
-		log.Panicln(err)
+		panic(err)
 	}
 }
 
-func (en *AcEnforcer) RemoveTeamRole(teamid uint, userid uint, role RoleEnum) {
-	user := strconv.FormatUint(uint64(userid), 10)
-	team := en.teamModel(teamid)
-
-	rolePolicies := NewTeamItemPolicy()
-	policies := rolePolicies[role]
-
-	mapPolicies := make([][]string, len(policies))
-
-	for ind, policy := range policies {
-		mapPolicies[ind] = []string{user, team, string(policy)}
-	}
-
-	_, err := en.En.RemovePolicies(mapPolicies)
-
-	if err != nil {
-		log.Panicln(err)
-	}
-}
-
-func NewModelEnfocer(db *gorm.DB, name string) *AcEnforcer {
-	adapt, err := gormadapter.NewAdapterByDBUseTableName(db, "casbin_", name)
+func NewEnforcer(db *gorm.DB) *Enforcer {
+	tname := "domain_enforcer"
+	adapt, err := gormadapter.NewAdapterByDBUseTableName(db, "casbin_", tname)
 	if err != nil {
 		log.Panicln("create adapter error")
 	}
@@ -106,23 +124,27 @@ func NewModelEnfocer(db *gorm.DB, name string) *AcEnforcer {
 	e = some(where (p.eft == allow)) && !some(where (p.eft == deny))
 	
 	[matchers]
-	m = r.obj == p.obj && r.dom == p.dom && g(r.sub, p.sub, r.dom) && r.act == p.act
+	m = r.obj == p.obj && r.dom == p.dom && g(r.sub, p.sub, r.dom) || \
+	(r.obj == p.obj && g(r.sub, p.sub, "rdom")) && \
+	r.act == p.act
 	`)
 
 	if err != nil {
 		log.Panicln("create model enforcer error")
 	}
 
-	enforce, err := casbin.NewEnforcer(m, adapt)
+	forcer, err := casbin.NewEnforcer(m, adapt)
 
 	if err != nil {
-		log.Panicln("create enforcer error")
+		log.Panicln(err)
 	}
 
-	ac := AcEnforcer{
-		Name: name,
-		En:   enforce,
+	enforcer := Enforcer{
+		forcer: forcer,
 	}
 
-	return &ac
+	// root := enforcer.GetRootDomain()
+	// root.InitiatePolicies()
+
+	return &enforcer
 }

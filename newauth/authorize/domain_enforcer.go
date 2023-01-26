@@ -1,69 +1,125 @@
 package authorize
 
 import (
-	"log"
+	"strconv"
 
 	"github.com/casbin/casbin/v2"
-	"github.com/casbin/casbin/v2/model"
-	gormadapter "github.com/casbin/gorm-adapter/v3"
-	"gorm.io/gorm"
 )
 
-type Domain string
+func DomainName(domainID uint) string {
+	if domainID == 0 {
+		return string(RootDomain)
+	}
 
-const (
-	RootDomain Domain = "admin_domain"
-)
+	idnya := strconv.FormatUint(uint64(domainID), 10)
+	return "dom" + idnya
+}
+
+func userString(userID uint) string {
+	return "u" + strconv.FormatUint(uint64(userID), 10)
+}
+
+func deviceString(deviceID uint) string {
+	return "d" + strconv.FormatUint(uint64(deviceID), 10)
+}
+
+type DomainResourcePolicies map[RoleEnum][]ActBasicEnum
 
 type DomainEnforcer struct {
-	forcer *casbin.Enforcer
+	ID         uint
+	DomainName string
+	forcer     *casbin.Enforcer
 }
 
-func (en *DomainEnforcer) CreateDomain()     { panic("not implemented") }
-func (en *DomainEnforcer) DeleteDomain()     { panic("not implemented") }
-func (en *DomainEnforcer) CreateRootDomain() { panic("not implemented") }
+func (en *DomainEnforcer) BlockUser(userID uint, role RoleEnum) {
 
-func (en *DomainEnforcer) InitiateEnforcer() {
+}
+
+func (en *DomainEnforcer) UnblockUser(userID uint) {
+
+}
+
+func (en *DomainEnforcer) AddDevice(deviceID uint, userID uint) {
+	device := deviceString(deviceID)
+	user := userString(userID)
+
+	_, err := en.forcer.AddRolesForUser(device, []string{user, string(DeviceRole)}, en.DomainName)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func (en *DomainEnforcer) RemoveDevice(deviceID uint, userID uint) {
+	device := deviceString(deviceID)
+	user := userString(userID)
+
+	for _, value := range []string{user, string(DeviceRole)} {
+		_, err := en.forcer.DeleteRoleForUser(device, string(value), en.DomainName)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+}
+
+func (en *DomainEnforcer) AddUser(userID uint, role RoleEnum) {
 	forcer := en.forcer
+
+	user := userString(userID)
+	_, err := forcer.AddRoleForUserInDomain(user, string(role), en.DomainName)
+	if err != nil {
+		panic(err)
+	}
+}
+func (en *DomainEnforcer) RemoveUser(userID uint, role RoleEnum) {
+	forcer := en.forcer
+
+	user := userString(userID)
+	_, err := forcer.DeleteRoleForUserInDomain(user, string(role), en.DomainName)
+	if err != nil {
+		panic(err)
+	}
 }
 
-func NewDomainEnforcer(db *gorm.DB) *DomainEnforcer {
-	tname := "domain_enforcer"
-	adapt, err := gormadapter.NewAdapterByDBUseTableName(db, "casbin_", tname)
+func (en *DomainEnforcer) Access(userID uint, resource ResourceEnum, act ActBasicEnum) bool {
+	forcer := en.forcer
+
+	user := userString(userID)
+	ok, err := forcer.Enforce(user, en.DomainName, string(resource), string(act))
 	if err != nil {
-		log.Panicln("create adapter error")
+		return false
 	}
+	return ok
+}
 
-	m, err := model.NewModelFromString(`
-	[request_definition]
-	r = sub, dom, obj, act
-	
-	[policy_definition]
-	p = sub, dom, obj, act, eft
-	
-	[role_definition]
-	g = _, _, _
-	
-	[policy_effect]
-	e = some(where (p.eft == allow)) && !some(where (p.eft == deny))
-	
-	[matchers]
-	m = r.obj == p.obj && r.dom == p.dom && g(r.sub, p.sub, r.dom) && r.act == p.act
-	`)
+func (en *DomainEnforcer) AddResourcePolicies(resource ResourceEnum, policies *DomainResourcePolicies) {
+	forcer := en.forcer
 
-	if err != nil {
-		log.Panicln("create model enforcer error")
+	for role, actions := range *policies {
+
+		for _, action := range actions {
+			_, err := forcer.AddPolicies([][]string{
+				{string(role), en.DomainName, string(resource), string(action), string(AllowEffect)},
+			})
+			if err != nil {
+				panic(err)
+			}
+		}
 	}
+}
 
-	forcer, err := casbin.NewEnforcer(m, adapt)
+func (en *DomainEnforcer) RemoveResourcePolicies(resource ResourceEnum, policies DomainResourcePolicies) {
+	forcer := en.forcer
 
-	if err != nil {
-		log.Panicln("create enforcer error")
+	for role, actions := range policies {
+
+		for _, action := range actions {
+			_, err := forcer.RemovePolicy([][]string{
+				{string(role), en.DomainName, string(resource), string(action), string(AllowEffect)},
+			})
+			if err != nil {
+				panic(err)
+			}
+		}
 	}
-
-	enforcer := DomainEnforcer{
-		forcer: forcer,
-	}
-
-	return &enforcer
 }

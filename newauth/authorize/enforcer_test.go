@@ -3,42 +3,53 @@ package authorize_test
 import (
 	"testing"
 
-	"github.com/PDC-Repository/newauth/newauth"
+	"github.com/PDC-Repository/newauth/config"
 	"github.com/PDC-Repository/newauth/newauth/authorize"
 	"github.com/stretchr/testify/assert"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
-func TestEnforcer(t *testing.T) {
+func TestDomainEnforcer(t *testing.T) {
+	db, err := gorm.Open(postgres.Open(config.DatabaseUri), &gorm.Config{})
 
-	enforcer := authorize.NewModelEnfocer(newauth.NewDatabase(), "test")
-	en := enforcer.En
-	en.AddPolicy("admin", "model2", "login")
-	en.AddRoleForUser("cc1", "admin")
+	if err != nil {
+		panic(err)
+	}
 
-	ok, err := en.HasRoleForUser("cc1", "admin")
+	forcer := authorize.NewEnforcer(db)
+	rForcer := forcer.GetDomain(0)
+	dForcer := forcer.GetDomain(1)
 
-	assert.Nil(t, err)
-	assert.True(t, ok)
+	t.Run("test block access owner", func(t *testing.T) {
 
-	ok, err = en.Enforce("cc1", "model2", "login")
-	t.Log(ok)
-	assert.Nil(t, err)
-	assert.True(t, ok)
+		var ownerID uint = 10
+		var blockOwnerID uint = 12
+		var guestID uint = 11
 
-	t.Run("test func access", func(t *testing.T) {
-		_, err := enforcer.En.AddPolicy(string(authorize.OwnerRole), string(authorize.TeamResource), string(authorize.ActBasicView))
+		rForcer.AddResourcePolicies(authorize.TeamResource, &authorize.DomainResourcePolicies{
+			authorize.RootRole:  []authorize.ActBasicEnum{authorize.ActBasicDelete},
+			authorize.OwnerRole: []authorize.ActBasicEnum{authorize.ActBasicWrite},
+		})
+		rForcer.AddUser(ownerID, authorize.OwnerRole)
+		rForcer.AddUser(blockOwnerID, authorize.OwnerRole)
 
-		assert.Nil(t, err, "add policy tidak ada error")
+		assert.True(t, dForcer.Access(ownerID, authorize.TeamResource, authorize.ActBasicWrite), "owner harus bisa akses ke child domain")
+		assert.False(t, dForcer.Access(guestID, authorize.TeamResource, authorize.ActBasicWrite), "guest tidak bisa akses ke child domain")
 
-		enforcer.En.AddRoleForUser("7", string(authorize.OwnerRole))
-		ok, _ := enforcer.Access(7, authorize.TeamResource, 0, authorize.ActBasicView)
+		t.Run("test block owner user", func(t *testing.T) {
+			rForcer.BlockUser(blockOwnerID, authorize.OwnerRole)
 
-		assert.True(t, ok, "harus true accessnya")
+			assert.False(t, dForcer.Access(blockOwnerID, authorize.TeamResource, authorize.ActBasicWrite), "block owner tidak akses ke child domain")
+			assert.False(t, rForcer.Access(blockOwnerID, authorize.TeamResource, authorize.ActBasicWrite), "block owner tidak akses ke root domain")
+		})
+
 	})
 
-	// ok, err := en.Enforce("admin23", "model2", "read")
+	t.Run("test block user in team", func(t *testing.T) {
+	})
+	t.Run("test delete domain", func(t *testing.T) {
 
-	// assert.Nil(t, err)
-	// assert.True(t, ok)
+	})
 
 }

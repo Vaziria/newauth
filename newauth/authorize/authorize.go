@@ -1,144 +1,88 @@
 package authorize
 
-import (
-	"errors"
-	"log"
-	"strconv"
-	"sync"
+// import (
+// 	"errors"
+// 	"log"
+// 	"strconv"
+// 	"sync"
 
-	"gorm.io/gorm"
-)
+// 	"gorm.io/gorm"
+// )
 
-type RoleEnum string
+// const (
+// 	ActRoleSet string = "set"
+// )
 
-const (
-	RootRole   RoleEnum = "root"
-	OwnerRole  RoleEnum = "owner"
-	LeaderRole RoleEnum = "leader"
-	CsRole     RoleEnum = "cs"
-)
+// type ResourceEnum string
 
-const (
-	ActRoleSet string = "set"
-)
+// const (
+// 	RoleResource ResourceEnum = "role"
+// 	TeamResource ResourceEnum = "team"
+// 	BotResource  ResourceEnum = "bot"
+// )
 
-type ActBasicEnum string
+// func Exist(data RoleEnum, list []RoleEnum) bool {
 
-const (
-	ActBasicWrite  ActBasicEnum = "write"
-	ActBasicUpdate ActBasicEnum = "update"
-	ActBasicDelete ActBasicEnum = "delete"
-	ActBasicView   ActBasicEnum = "view"
-)
+// 	for _, b := range list {
+// 		if data == b {
+// 			return true
+// 		}
+// 	}
 
-type ResourceEnum string
+// 	return false
+// }
 
-const (
-	RoleResource ResourceEnum = "role"
-	TeamResource ResourceEnum = "team"
-	BotResource  ResourceEnum = "bot"
-)
+// type Authorize struct {
+// 	Role *AcEnforcer
+// }
 
-func Exist(data RoleEnum, list []RoleEnum) bool {
+// func (auth *Authorize) UserSetRole(userSetterId uint, userid uint, role RoleEnum) error {
 
-	for _, b := range list {
-		if data == b {
-			return true
-		}
-	}
+// 	canSets := auth.UserCanSetRoleList(userSetterId)
+// 	if !Exist(role, canSets) {
+// 		return errors.New("cannot set role " + string(role))
+// 	}
 
-	return false
-}
+// 	user := strconv.FormatUint(uint64(userid), 10)
+// 	_, err := auth.Role.En.AddRoleForUser(user, string(role), ActRoleSet)
 
-type Authorize struct {
-	Role *AcEnforcer
-}
+// 	if err != nil {
+// 		log.Panicln(err)
+// 	}
 
-func (auth *Authorize) UserSetRole(userSetterId uint, userid uint, role RoleEnum) error {
+// 	return nil
+// }
 
-	canSets := auth.UserCanSetRoleList(userSetterId)
-	if !Exist(role, canSets) {
-		return errors.New("cannot set role " + string(role))
-	}
+// func (auth *Authorize) UserRemoveRole(userSetterId uint, userid uint, role RoleEnum) error {
 
-	user := strconv.FormatUint(uint64(userid), 10)
-	_, err := auth.Role.En.AddRoleForUser(user, string(role), ActRoleSet)
+// 	canSets := auth.UserCanSetRoleList(userSetterId)
 
-	if err != nil {
-		log.Panicln(err)
-	}
+// 	if !Exist(role, canSets) {
+// 		return errors.New("cannot delete role " + string(role))
+// 	}
 
-	return nil
-}
+// 	user := strconv.FormatUint(uint64(userid), 10)
+// 	_, err := auth.Role.En.DeleteRoleForUser(user, string(role))
 
-func (auth *Authorize) UserRemoveRole(userSetterId uint, userid uint, role RoleEnum) error {
+// 	if err != nil {
+// 		log.Panicln("adding role to user error", userid, role)
+// 	}
 
-	canSets := auth.UserCanSetRoleList(userSetterId)
+// 	return nil
+// }
 
-	if !Exist(role, canSets) {
-		return errors.New("cannot delete role " + string(role))
-	}
+// func (auth *Authorize) UserCanSetRoleList(userid uint) []RoleEnum {
+// 	user := strconv.FormatUint(uint64(userid), 10)
+// 	data, _ := auth.Role.En.GetNamedImplicitPermissionsForUser("p", user)
 
-	user := strconv.FormatUint(uint64(userid), 10)
-	_, err := auth.Role.En.DeleteRoleForUser(user, string(role))
+// 	hasil := make([]RoleEnum, len(data))
 
-	if err != nil {
-		log.Panicln("adding role to user error", userid, role)
-	}
+// 	for index, val := range data {
+// 		hasil[index] = RoleEnum(val[1])
+// 	}
 
-	return nil
-}
+// 	return hasil
+// }
 
-func (auth *Authorize) UserCanSetRoleList(userid uint) []RoleEnum {
-	user := strconv.FormatUint(uint64(userid), 10)
-	data, _ := auth.Role.En.GetNamedImplicitPermissionsForUser("p", user)
-
-	hasil := make([]RoleEnum, len(data))
-
-	for index, val := range data {
-		hasil[index] = RoleEnum(val[1])
-	}
-
-	return hasil
-}
-
-var author Authorize
-var once = sync.Once{}
-
-func NewAuthorize(db *gorm.DB) *Authorize {
-	roleEnforcer := NewModelEnfocer(db, string(RoleResource))
-
-	roleEnforcer.En.AddPolicies([][]string{
-		{string(RootRole), string(TeamResource), string(ActBasicDelete)},
-		{string(RootRole), string(TeamResource), string(ActBasicUpdate)},
-		{string(RootRole), string(TeamResource), string(ActBasicWrite)},
-		{string(OwnerRole), string(TeamResource), string(ActBasicDelete)},
-		{string(OwnerRole), string(TeamResource), string(ActBasicUpdate)},
-		{string(OwnerRole), string(TeamResource), string(ActBasicWrite)},
-		{string(RootRole), string(BotResource), string(ActBasicDelete)},
-		{string(RootRole), string(BotResource), string(ActBasicUpdate)},
-		{string(RootRole), string(BotResource), string(ActBasicWrite)},
-	})
-
-	roles := []RoleEnum{RootRole, OwnerRole, LeaderRole, CsRole}
-
-	for index, role := range roles {
-
-		for _, chrole := range roles[index+1:] {
-			_, err := roleEnforcer.En.AddPolicy(string(role), string(chrole), ActRoleSet)
-
-			if err != nil {
-				log.Panicln(err)
-			}
-		}
-
-	}
-
-	once.Do(func() {
-		author = Authorize{
-			Role: roleEnforcer,
-		}
-	})
-
-	return &author
-}
+// var author Authorize
+// var once = sync.Once{}
