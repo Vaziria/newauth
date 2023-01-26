@@ -5,10 +5,11 @@ import (
 )
 
 type Team struct {
-	ID          uint    `gorm:"primarykey" json:"id"`
-	Name        string  `json:"name"`
-	Description string  `json:"description"`
-	Users       []*User `gorm:"many2many:user_teams;" json:"users"`
+	ID          uint     `gorm:"primarykey" json:"id"`
+	Name        string   `json:"name"`
+	Description string   `json:"description"`
+	Users       []*User  `gorm:"many2many:user_teams;" json:"users"`
+	Quotas      []*Quota `gorm:"foreignKey:TeamID"`
 }
 
 func (user *Team) TableName() string {

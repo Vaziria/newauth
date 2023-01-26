@@ -1,9 +1,7 @@
 package models
 
-import "gorm.io/gorm"
-
 type Bot struct {
-	gorm.Model
-	Name string
-	Desc string
+	ID   uint   `gorm:"primarykey"`
+	Name string `json:"name"`
+	Desc string `json:"desc"`
 }

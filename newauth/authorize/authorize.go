@@ -36,6 +36,7 @@ type ResourceEnum string
 const (
 	RoleResource ResourceEnum = "role"
 	TeamResource ResourceEnum = "team"
+	BotResource  ResourceEnum = "bot"
 )
 
 func Exist(data RoleEnum, list []RoleEnum) bool {
@@ -114,6 +115,9 @@ func NewAuthorize(db *gorm.DB) *Authorize {
 		{string(OwnerRole), string(TeamResource), string(ActBasicDelete)},
 		{string(OwnerRole), string(TeamResource), string(ActBasicUpdate)},
 		{string(OwnerRole), string(TeamResource), string(ActBasicWrite)},
+		{string(RootRole), string(BotResource), string(ActBasicDelete)},
+		{string(RootRole), string(BotResource), string(ActBasicUpdate)},
+		{string(RootRole), string(BotResource), string(ActBasicWrite)},
 	})
 
 	roles := []RoleEnum{RootRole, OwnerRole, LeaderRole, CsRole}

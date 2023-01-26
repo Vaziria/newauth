@@ -26,6 +26,10 @@ type AcEnforcer struct {
 	En   *casbin.Enforcer
 }
 
+func (sus *AcEnforcer) SuspendDevice() {}
+func (sus *AcEnforcer) SuspendUser()   {}
+func (sus *AcEnforcer) SuspendTeam()   {}
+
 func (en *AcEnforcer) teamModel(teamid uint) string {
 	objname := strconv.FormatUint(uint64(teamid), 10)
 	return string(TeamResource) + string(objname)
@@ -39,7 +43,6 @@ func (en *AcEnforcer) Access(userid uint, resource ResourceEnum, resourceid uint
 		item := strconv.FormatUint(uint64(resourceid), 10)
 		resitem = resitem + item
 	}
-	log.Println("chekc access", user, resitem, acc)
 	return en.En.Enforce(string(user), string(resitem), string(acc))
 }
 
@@ -91,19 +94,19 @@ func NewModelEnfocer(db *gorm.DB, name string) *AcEnforcer {
 
 	m, err := model.NewModelFromString(`
 	[request_definition]
-	r = sub, obj, act
-
+	r = sub, dom, obj, act
+	
 	[policy_definition]
-	p = sub, obj, act
-
+	p = sub, dom, obj, act, eft
+	
 	[role_definition]
-	g = _, _
-
+	g = _, _, _
+	
 	[policy_effect]
-	e = some(where (p.eft == allow))
-
+	e = some(where (p.eft == allow)) && !some(where (p.eft == deny))
+	
 	[matchers]
-	m = r.obj == p.obj && g(r.sub, p.sub) && r.act == p.act
+	m = r.obj == p.obj && r.dom == p.dom && g(r.sub, p.sub, r.dom) && r.act == p.act
 	`)
 
 	if err != nil {

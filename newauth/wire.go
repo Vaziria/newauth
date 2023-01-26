@@ -19,6 +19,8 @@ func InitializeApplication() (*Application, error) {
 		apis.NewUserApi,
 		apis.NewAuthorizeApi,
 		apis.NewTeamApi,
+		apis.NewBotApi,
+		apis.NewQuotaApi,
 		authorize.NewAuthorize,
 		services.NewMailService,
 		NewDatabase,

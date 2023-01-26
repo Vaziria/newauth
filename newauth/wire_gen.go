@@ -24,8 +24,10 @@ func InitializeApplication() (*Application, error) {
 	decoder := schema.NewDecoder()
 	validate := validator.New()
 	teamApi := apis.NewTeamApi(authorizeAuthorize, db, decoder, validate)
+	botApi := apis.NewBotApi(validate, db, decoder)
+	quotaApi := apis.NewQuotaApi(db)
 	authorizeApi := apis.NewAuthorizeApi(authorizeAuthorize, validate)
-	router, err := NewRouter(db, userApi, teamApi, authorizeApi)
+	router, err := NewRouter(db, userApi, teamApi, botApi, quotaApi, authorizeApi)
 	if err != nil {
 		return nil, err
 	}

@@ -12,6 +12,8 @@ func NewRouter(
 	db *gorm.DB,
 	userApi *apis.UserApi,
 	teamApi *apis.TeamApi,
+	botApi *apis.BotApi,
+	quotaApi *apis.QuotaApi,
 	authorizeApi *apis.AuthorizeApi,
 ) (*mux.Router, error) {
 
@@ -33,7 +35,15 @@ func NewRouter(
 	teamR.HandleFunc("", teamApi.ListTeam).Methods(http.MethodGet)
 	teamR.HandleFunc("/user", teamApi.RemoveUser).Methods(http.MethodDelete)
 
-	// user_r := r.PathPrefix("/user").Subrouter()
+	botR := r.PathPrefix("/bot").Subrouter()
+	botR.HandleFunc("/create", botApi.Create).Methods(http.MethodPost)
+	botR.HandleFunc("", botApi.Update).Methods(http.MethodPut)
+	botR.HandleFunc("", botApi.Delete).Methods(http.MethodDelete)
+	botR.HandleFunc("", botApi.List).Methods(http.MethodGet)
+
+	quotaR := r.PathPrefix("/quota").Subrouter()
+	quotaR.HandleFunc("", quotaApi.InfoQuota).Methods(http.MethodGet)
+	quotaR.HandleFunc("", quotaApi.EditQuota).Methods(http.MethodPut)
 
 	return r, nil
 }

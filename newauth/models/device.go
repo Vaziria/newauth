@@ -1,19 +1,30 @@
 package models
 
-import "gorm.io/gorm"
+import (
+	"crypto/md5"
+	"encoding/hex"
+	"encoding/json"
+
+	"github.com/lib/pq"
+)
 
 type Device struct {
-	gorm.Model
+	ID uint `gorm:"primarykey"`
 
-	Hostname string
-
-	Platform  string
-	Suspended bool
+	Hostname      string         `json:"hostname" validate:"required"`
+	Platform      string         `json:"platform" validate:"required"`
+	Macs          pq.StringArray `gorm:"type:text[]" json:"macs" validate:"required"`
+	FingerprintID string         `gorm:"index:fingerprint_unique,unique"`
 }
 
-type Interface struct {
-	gorm.Model
+func CalculateFingerprintID(d *Device) {
+	rawmac, err := json.Marshal(d.Macs)
+	if err != nil {
+		panic(err)
+	}
 
-	Mac  string
-	Addr string
+	hash := md5.Sum(rawmac)
+
+	d.FingerprintID = hex.EncodeToString(hash[:])
+
 }
