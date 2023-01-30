@@ -18,6 +18,108 @@ definitions:
       message:
         type: string
     type: object
+  apis.BTokenCreatePayload:
+    properties:
+      bot_id:
+        type: integer
+      password:
+        type: string
+      team_id:
+        type: integer
+      user_id:
+        type: integer
+    required:
+    - bot_id
+    - password
+    - team_id
+    - user_id
+    type: object
+  apis.BTokenListRes:
+    properties:
+      code:
+        type: string
+      data:
+        items:
+          $ref: '#/definitions/models.BotToken'
+        type: array
+      message:
+        type: string
+    type: object
+  apis.BotCreatePayload:
+    properties:
+      desc:
+        type: string
+      name:
+        type: string
+    required:
+    - desc
+    - name
+    type: object
+  apis.BotCreateRes:
+    properties:
+      code:
+        type: string
+      data:
+        $ref: '#/definitions/models.Bot'
+      message:
+        type: string
+    type: object
+  apis.BotListRes:
+    properties:
+      code:
+        type: string
+      data:
+        items:
+          $ref: '#/definitions/models.Bot'
+        type: array
+      message:
+        type: string
+    type: object
+  apis.BotUpdatePayload:
+    properties:
+      desc:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+    required:
+    - desc
+    - id
+    - name
+    type: object
+  apis.CreateTeamResponse:
+    properties:
+      code:
+        type: string
+      data:
+        $ref: '#/definitions/models.Team'
+      message:
+        type: string
+    type: object
+  apis.EditQuotaPayload:
+    properties:
+      quotas:
+        items:
+          $ref: '#/definitions/models.Quota'
+        type: array
+      team_id:
+        type: integer
+    required:
+    - quotas
+    - team_id
+    type: object
+  apis.LisTeamResponse:
+    properties:
+      code:
+        type: string
+      data:
+        items:
+          $ref: '#/definitions/models.Team'
+        type: array
+      message:
+        type: string
+    type: object
   apis.LoginPayload:
     properties:
       password:
@@ -25,25 +127,228 @@ definitions:
       username:
         type: string
     type: object
+  apis.QuotaInfoRes:
+    properties:
+      code:
+        type: string
+      data:
+        items:
+          $ref: '#/definitions/models.Quota'
+        type: array
+      message:
+        type: string
+    type: object
   apis.ResetPassword:
     properties:
       email:
         type: string
     type: object
-  apis.ResetPasswordRes:
+  apis.RoleInfoData:
+    properties:
+      can_set_role:
+        items:
+          $ref: '#/definitions/authorize.RoleEnum'
+        type: array
+    type: object
+  apis.RoleListResponse:
     properties:
       code:
         type: string
       data:
-        additionalProperties:
-          type: string
-        type: object
-      key:
-        type: string
+        $ref: '#/definitions/apis.RoleInfoData'
       message:
         type: string
     type: object
+  apis.SetRolePayload:
+    properties:
+      action:
+        $ref: '#/definitions/authorize.RoleAct'
+      role:
+        $ref: '#/definitions/authorize.RoleEnum'
+      team_id:
+        type: integer
+      user_id:
+        type: integer
+    required:
+    - action
+    - role
+    - user_id
+    type: object
+  apis.TeamPayload:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+    required:
+    - description
+    - name
+    type: object
+  apis.UpdateTeamResponse:
+    properties:
+      code:
+        type: string
+      data:
+        $ref: '#/definitions/models.Team'
+      message:
+        type: string
+    type: object
+  authorize.RoleAct:
+    enum:
+    - set
+    - unset
+    type: string
+    x-enum-varnames:
+    - RoleSet
+    - RoleUnset
+  authorize.RoleEnum:
+    enum:
+    - root
+    - own
+    - lead
+    - dev
+    - cs
+    type: string
+    x-enum-varnames:
+    - RootRole
+    - OwnerRole
+    - LeaderRole
+    - DeviceRole
+    - CsRole
+  gorm.DeletedAt:
+    properties:
+      time:
+        type: string
+      valid:
+        description: Valid is true if Time is not NULL
+        type: boolean
+    type: object
+  models.Bot:
+    properties:
+      desc:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+  models.BotToken:
+    properties:
+      bot:
+        $ref: '#/definitions/models.Bot'
+      bot_id:
+        type: integer
+      created_at:
+        type: string
+      device:
+        $ref: '#/definitions/models.Device'
+      device_id:
+        type: integer
+      id:
+        type: integer
+      last_login:
+        type: string
+      team:
+        $ref: '#/definitions/models.Team'
+      team_id:
+        type: integer
+      user:
+        $ref: '#/definitions/models.User'
+      user_id:
+        type: integer
+    type: object
+  models.Device:
+    properties:
+      fingerprintID:
+        type: string
+      hostname:
+        type: string
+      id:
+        type: integer
+      macs:
+        items:
+          type: string
+        type: array
+      platform:
+        type: string
+    required:
+    - hostname
+    - macs
+    - platform
+    type: object
+  models.Quota:
+    properties:
+      bot:
+        $ref: '#/definitions/models.Bot'
+      botID:
+        type: integer
+      count:
+        type: integer
+      id:
+        type: integer
+      limit:
+        type: integer
+      team:
+        $ref: '#/definitions/models.Team'
+      teamID:
+        type: integer
+    type: object
+  models.Team:
+    properties:
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      quotas:
+        items:
+          $ref: '#/definitions/models.Quota'
+        type: array
+      users:
+        items:
+          $ref: '#/definitions/models.User'
+        type: array
+    type: object
   models.User:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      email:
+        type: string
+      id:
+        type: integer
+      lastReset:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+      phone:
+        type: string
+      suspended:
+        type: boolean
+      teams:
+        items:
+          $ref: '#/definitions/models.Team'
+        type: array
+      token:
+        items:
+          $ref: '#/definitions/models.BotToken'
+        type: array
+      updatedAt:
+        type: string
+      username:
+        type: string
+      verified:
+        type: boolean
+    required:
+    - email
+    - name
+    - password
+    - username
     type: object
 host: localhost:5000
 info:
@@ -71,6 +376,181 @@ paths:
       summary: Reset Password
       tags:
       - Users
+  /authorize/info:
+    get:
+      description: get info role user
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/apis.RoleListResponse'
+      summary: role
+      tags:
+      - Role
+  /authorize/user:
+    post:
+      consumes:
+      - application/json
+      description: set role untuk user
+      parameters:
+      - description: set role untuk user
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/apis.SetRolePayload'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/apis.ApiResponse'
+      summary: set role untuk user
+      tags:
+      - Users
+  /bot:
+    delete:
+      consumes:
+      - application/json
+      description: Delete bot
+      parameters:
+      - in: query
+        name: id
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/apis.ApiResponse'
+      summary: Untuk Delete Bot
+      tags:
+      - Bot
+    get:
+      consumes:
+      - application/json
+      description: list bot
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/apis.BotListRes'
+      summary: Untuk list Bot
+      tags:
+      - Bot
+    put:
+      consumes:
+      - application/json
+      description: Update bot
+      parameters:
+      - description: create payload
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/apis.BotUpdatePayload'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/apis.ApiResponse'
+      summary: Untuk Update Bot
+      tags:
+      - Bot
+  /bot/create:
+    post:
+      consumes:
+      - application/json
+      description: create bot
+      parameters:
+      - description: create payload
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/apis.BotCreatePayload'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/apis.BotCreateRes'
+      summary: Untuk create Bot
+      tags:
+      - Bot
+  /bot_token:
+    delete:
+      description: delete token
+      parameters:
+      - in: query
+        name: botID
+        required: true
+        type: integer
+      - in: query
+        name: teamID
+        required: true
+        type: integer
+      - in: query
+        name: tokenID
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/apis.ApiResponse'
+      summary: delete token
+      tags:
+      - token
+    get:
+      description: list device
+      parameters:
+      - in: query
+        name: teamID
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/apis.BTokenListRes'
+      summary: list device
+      tags:
+      - token
+    post:
+      description: create token
+      parameters:
+      - description: payload
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/apis.BTokenCreatePayload'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/apis.ApiResponse'
+      summary: create token
+      tags:
+      - token
+  /bot_token/reset_device:
+    put:
+      description: reset device
+      parameters:
+      - in: query
+        name: teamID
+        required: true
+        type: integer
+      - in: query
+        name: tokenID
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/apis.ApiResponse'
+      summary: reset device
+      tags:
+      - token
   /login:
     post:
       consumes:
@@ -91,6 +571,38 @@ paths:
       summary: Login user
       tags:
       - Users
+  /quota:
+    get:
+      description: Info Quota
+      parameters:
+      - in: query
+        name: id
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/apis.QuotaInfoRes'
+      summary: Info Quota
+      tags:
+      - quota
+    put:
+      description: Info Quota
+      parameters:
+      - description: payload edit quota
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/apis.EditQuotaPayload'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/apis.ApiResponse'
+      summary: Info Quota
+      tags:
+      - quota
   /register:
     post:
       consumes:
@@ -127,8 +639,100 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/apis.ResetPasswordRes'
+            $ref: '#/definitions/apis.ApiResponse'
       summary: Reset Password
       tags:
       - Users
+  /search_user:
+    get:
+      consumes:
+      - application/json
+      description: List User
+      parameters:
+      - description: reset
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/apis.AcceptResetPassword'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/apis.ApiResponse'
+      summary: List User
+      tags:
+      - Users
+  /team:
+    delete:
+      description: Remove User Dari Team
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/apis.ApiResponse'
+      summary: Remove User Dari Team
+      tags:
+      - Teams
+    get:
+      consumes:
+      - application/json
+      description: Remove User Dari Team
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/apis.LisTeamResponse'
+      summary: Remove User Dari Team
+      tags:
+      - Teams
+    post:
+      consumes:
+      - application/json
+      description: create team
+      parameters:
+      - description: User Data
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/apis.LoginPayload'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/apis.CreateTeamResponse'
+      summary: Untuk create Team
+      tags:
+      - Teams
+    put:
+      consumes:
+      - application/json
+      description: Remove User Dari Team
+      parameters:
+      - description: User Data
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/apis.TeamPayload'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/apis.UpdateTeamResponse'
+      summary: Remove User Dari Team
+      tags:
+      - Teams
+  /team/user:
+    delete:
+      description: Remove User Dari Team
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/apis.ApiResponse'
+      summary: Remove User Dari Team
+      tags:
+      - Teams
 swagger: "2.0"

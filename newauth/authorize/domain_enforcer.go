@@ -1,6 +1,7 @@
 package authorize
 
 import (
+	"log"
 	"strconv"
 
 	"github.com/casbin/casbin/v2"
@@ -29,14 +30,6 @@ type DomainEnforcer struct {
 	ID         uint
 	DomainName string
 	forcer     *casbin.Enforcer
-}
-
-func (en *DomainEnforcer) BlockUser(userID uint, role RoleEnum) {
-
-}
-
-func (en *DomainEnforcer) UnblockUser(userID uint) {
-
 }
 
 func (en *DomainEnforcer) AddDevice(deviceID uint, userID uint) {
@@ -82,6 +75,18 @@ func (en *DomainEnforcer) RemoveUser(userID uint, role RoleEnum) {
 }
 
 func (en *DomainEnforcer) Access(userID uint, resource ResourceEnum, act ActBasicEnum) bool {
+	forcer := en.forcer
+
+	user := userString(userID)
+	log.Println(user, en.DomainName, string(resource), string(act))
+	ok, err := forcer.Enforce(user, en.DomainName, string(resource), string(act))
+	if err != nil {
+		return false
+	}
+	return ok
+}
+
+func (en *DomainEnforcer) AccessRole(userID uint, resource RoleEnum, act RoleAct) bool {
 	forcer := en.forcer
 
 	user := userString(userID)

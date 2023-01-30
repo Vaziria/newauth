@@ -47,7 +47,7 @@ require (
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/swaggo/swag v1.8.9
+	github.com/swaggo/swag v1.8.10
 	golang.org/x/sys v0.4.0 // indirect
 	golang.org/x/tools v0.5.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect

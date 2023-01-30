@@ -17,7 +17,7 @@ import (
 
 func TestTeamA(t *testing.T) {
 
-	db := newauth.NewDatabase()
+	db := newauth.InitializeDatabase()
 	api, tearDownApp := scenario.NewPlainWebScenario()
 
 	owner, tOwner := scenario.NewRoleUserScenario(db, authorize.OwnerRole)

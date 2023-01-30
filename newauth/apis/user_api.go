@@ -28,13 +28,13 @@ type RegisterResponse struct {
 }
 
 // Register User ... Register User
-// @Summary Create new user based on paramters
-// @Description Create new user
-// @Tags Users
-// @Accept json
-// @Param user body models.User true "User Data"
-// @Success 200 {object} object
-// @Router /register [post]
+//	@Summary		Create new user based on paramters
+//	@Description	Create new user
+//	@Tags			Users
+//	@Accept			json
+//	@Param			user	body		models.User	true	"User Data"
+//	@Success		200		{object}	object
+//	@Router			/register [post]
 func (api *UserApi) Register(w http.ResponseWriter, req *http.Request) {
 	var user models.User
 
@@ -91,13 +91,13 @@ func (api *UserApi) Suspend(resp http.ResponseWriter, req *http.Request) {
 }
 
 // Login user ... Login user
-// @Summary Login user
-// @Description Login user
-// @Tags Users
-// @Accept json
-// @Param user body LoginPayload true "User Data"
-// @Success 200 {object} ApiResponse
-// @Router /login [post]
+//	@Summary		Login user
+//	@Description	Login user
+//	@Tags			Users
+//	@Accept			json
+//	@Param			user	body		LoginPayload	true	"User Data"
+//	@Success		200		{object}	ApiResponse
+//	@Router			/login [post]
 func (api *UserApi) Login(w http.ResponseWriter, req *http.Request) {
 	var payload LoginPayload
 
@@ -149,13 +149,13 @@ type ResetPasswordRes struct {
 }
 
 // Reset Password ... Reset Password
-// @Summary Reset Password
-// @Description Reset Password Request pertama
-// @Tags Users
-// @Accept json
-// @Param user body ResetPassword true "User Data"
-// @Success 200 {object} ApiResponse
-// @Router /reset_pwd [post]
+//	@Summary		Reset Password
+//	@Description	Reset Password Request pertama
+//	@Tags			Users
+//	@Accept			json
+//	@Param			user	body		ResetPassword	true	"User Data"
+//	@Success		200		{object}	ApiResponse
+//	@Router			/reset_pwd [post]
 func (api *UserApi) ResetPassword(w http.ResponseWriter, req *http.Request) {
 
 	var payload ResetPassword
@@ -191,13 +191,13 @@ type AcceptResetPassword struct {
 }
 
 // Accept Reset Password ... Reset Password
-// @Summary Reset Password
-// @Description Reset Password Request pertama
-// @Tags Users
-// @Accept json
-// @Param user body AcceptResetPassword true "reset"
-// @Success 200 {object} ApiResponse
-// @Router /accept_reset_pwd [post]
+//	@Summary		Reset Password
+//	@Description	Reset Password Request pertama
+//	@Tags			Users
+//	@Accept			json
+//	@Param			user	body		AcceptResetPassword	true	"reset"
+//	@Success		200		{object}	ApiResponse
+//	@Router			/accept_reset_pwd [post]
 func (api *UserApi) AcceptResetPassword(w http.ResponseWriter, req *http.Request) {
 	var payload AcceptResetPassword
 
@@ -260,13 +260,13 @@ type searchUserListRes struct {
 }
 
 // List User ... List User
-// @Summary List User
-// @Description List User
-// @Tags Users
-// @Accept json
-// @Param user body AcceptResetPassword true "reset"
-// @Success 200 {object} ApiResponse
-// @Router /search_user [get]
+//	@Summary		List User
+//	@Description	List User
+//	@Tags			Users
+//	@Accept			json
+//	@Param			user	body		AcceptResetPassword	true	"reset"
+//	@Success		200		{object}	ApiResponse
+//	@Router			/search_user [get]
 func (api *UserApi) GetUserList(w http.ResponseWriter, req *http.Request) {
 	var query UserListQuery
 

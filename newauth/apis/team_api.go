@@ -12,7 +12,7 @@ import (
 )
 
 type TeamApi struct {
-	auth     *authorize.Authorize
+	forcer   *authorize.Enforcer
 	db       *gorm.DB
 	qdecoder *schema.Decoder
 	validate *validator.Validate
@@ -38,13 +38,13 @@ type CreateTeamResponse struct {
 }
 
 // Create Team ... Create Team
-// @Summary Untuk create Team
-// @Description create team
-// @Tags Teams
-// @Accept json
-// @Param user body LoginPayload true "User Data"
-// @Success 200 {object} CreateTeamResponse
-// @Router /team [post]
+//	@Summary		Untuk create Team
+//	@Description	create team
+//	@Tags			Teams
+//	@Accept			json
+//	@Param			user	body		LoginPayload	true	"User Data"
+//	@Success		200		{object}	CreateTeamResponse
+//	@Router			/team [post]
 func (api *TeamApi) CreateTeam(w http.ResponseWriter, r *http.Request) {
 	var payload CreateTeamPayload
 
@@ -53,9 +53,8 @@ func (api *TeamApi) CreateTeam(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	enforcer := api.auth.Role
-
-	ok, _ := enforcer.Access(JwtData.UserId, authorize.TeamResource, 0, authorize.ActBasicWrite)
+	rootdomain := api.forcer.GetDomain(0)
+	ok := rootdomain.Access(JwtData.UserId, authorize.TeamResource, authorize.ActBasicWrite)
 
 	if !ok {
 		SetResponse(http.StatusUnauthorized, w, &ApiResponse{
@@ -124,8 +123,10 @@ func (api *TeamApi) CreateTeam(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	enforcer.AddTeamRole(team.ID, payload.LeaderId, authorize.LeaderRole)
-	enforcer.AddTeamRole(team.ID, JwtData.UserId, authorize.OwnerRole)
+	teamDom := api.forcer.InitiateDomainPolicies(team.ID)
+
+	teamDom.AddUser(payload.LeaderId, authorize.LeaderRole)
+	teamDom.AddUser(JwtData.UserId, authorize.OwnerRole)
 
 	SetResponse(http.StatusOK, w, &CreateTeamResponse{
 		Data: team,
@@ -146,11 +147,11 @@ type RemoveUserQuery struct {
 }
 
 // Remove User ... Remove User Dari Team
-// @Summary Remove User Dari Team
-// @Description Remove User Dari Team
-// @Tags Teams
-// @Success 200 {object} ApiResponse
-// @Router /team/user [delete]
+//	@Summary		Remove User Dari Team
+//	@Description	Remove User Dari Team
+//	@Tags			Teams
+//	@Success		200	{object}	ApiResponse
+//	@Router			/team/user [delete]
 func (api *TeamApi) RemoveUser(w http.ResponseWriter, r *http.Request) {
 	var query RemoveUserQuery
 	err := api.qdecoder.Decode(&query, r.URL.Query())
@@ -175,8 +176,8 @@ func (api *TeamApi) RemoveUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	enforcer := api.auth.Role
-	ok, _ := enforcer.Access(JwtData.UserId, authorize.TeamResource, query.TeamID, authorize.ActBasicWrite)
+	teamForcer := api.forcer.GetDomain(query.TeamID)
+	ok := teamForcer.Access(JwtData.UserId, authorize.UserResource, authorize.ActBasicDelete)
 	if !ok {
 		SetResponse(http.StatusUnauthorized, w, &ApiResponse{
 			Code: "cant_access_resource",
@@ -205,7 +206,7 @@ func (api *TeamApi) RemoveUser(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
-	enforcer.RemoveTeamRole(query.TeamID, query.UserID, userteam.Role)
+	teamForcer.RemoveUser(query.UserID, userteam.Role)
 
 	SetResponse(http.StatusOK, w, &ApiResponse{
 		Code: "success",
@@ -213,11 +214,11 @@ func (api *TeamApi) RemoveUser(w http.ResponseWriter, r *http.Request) {
 }
 
 // Remove User ... Remove User Dari Team
-// @Summary Remove User Dari Team
-// @Description Remove User Dari Team
-// @Tags Teams
-// @Success 200 {object} ApiResponse
-// @Router /team [delete]
+//	@Summary		Remove User Dari Team
+//	@Description	Remove User Dari Team
+//	@Tags			Teams
+//	@Success		200	{object}	ApiResponse
+//	@Router			/team [delete]
 func (api *TeamApi) DeleteTeam(w http.ResponseWriter, r *http.Request) {
 	var query TeamQuery
 	JwtData, err := JwtFromHttp(w, r)
@@ -242,8 +243,8 @@ func (api *TeamApi) DeleteTeam(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	enforcer := api.auth.Role
-	ok, _ := enforcer.Access(JwtData.UserId, authorize.TeamResource, query.TeamID, authorize.ActBasicWrite)
+	teamForcer := api.forcer.GetDomain(query.TeamID)
+	ok := teamForcer.Access(JwtData.UserId, authorize.TeamResource, authorize.ActBasicDelete)
 	if !ok {
 		SetResponse(http.StatusUnauthorized, w, &ApiResponse{
 			Code: "cant_access_resource",
@@ -257,9 +258,7 @@ func (api *TeamApi) DeleteTeam(w http.ResponseWriter, r *http.Request) {
 		TeamID: query.TeamID,
 	}).Find(&userteams)
 
-	for _, userteam := range userteams {
-		enforcer.RemoveTeamRole(query.TeamID, userteam.UserID, userteam.Role)
-	}
+	api.forcer.DeleteDomain(query.TeamID)
 
 	err = api.db.Where(&models.Team{ID: query.TeamID}).Delete(&models.Team{}).Error
 
@@ -283,18 +282,16 @@ type UpdateTeamResponse struct {
 }
 
 // Remove User ... Remove User Dari Team
-// @Summary Remove User Dari Team
-// @Description Remove User Dari Team
-// @Tags Teams
-// @Success 200 {object} UpdateTeamResponse
-// @Accept json
-// @Param user body TeamPayload true "User Data"
-// @Router /team [put]
+//	@Summary		Remove User Dari Team
+//	@Description	Remove User Dari Team
+//	@Tags			Teams
+//	@Success		200	{object}	UpdateTeamResponse
+//	@Accept			json
+//	@Param			user	body	TeamPayload	true	"User Data"
+//	@Router			/team [put]
 func (api *TeamApi) UpdateTeam(w http.ResponseWriter, r *http.Request) {
 	var query TeamQuery
 	var payload TeamPayload
-
-	enforcer := api.auth.Role
 
 	err := api.qdecoder.Decode(&query, r.URL.Query())
 	if err != nil {
@@ -336,7 +333,8 @@ func (api *TeamApi) UpdateTeam(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ok, _ := enforcer.Access(JwtData.UserId, authorize.TeamResource, query.TeamID, authorize.ActBasicWrite)
+	teamForcer := api.forcer.GetDomain(query.TeamID)
+	ok := teamForcer.Access(JwtData.UserId, authorize.TeamResource, authorize.ActBasicUpdate)
 	if !ok {
 		SetResponse(http.StatusUnauthorized, w, &ApiResponse{
 			Code: "cant_access_resource",
@@ -383,12 +381,12 @@ type LisTeamResponse struct {
 }
 
 // Remove User ... Remove User Dari Team
-// @Summary Remove User Dari Team
-// @Description Remove User Dari Team
-// @Tags Teams
-// @Success 200 {object} LisTeamResponse
-// @Accept json
-// @Router /team [get]
+//	@Summary		Remove User Dari Team
+//	@Description	Remove User Dari Team
+//	@Tags			Teams
+//	@Success		200	{object}	LisTeamResponse
+//	@Accept			json
+//	@Router			/team [get]
 func (api *TeamApi) ListTeam(w http.ResponseWriter, r *http.Request) {
 	JwtData, err := JwtFromHttp(w, r)
 	if err != nil {
@@ -405,16 +403,15 @@ func (api *TeamApi) ListTeam(w http.ResponseWriter, r *http.Request) {
 }
 
 func NewTeamApi(
-	auth *authorize.Authorize,
 	db *gorm.DB,
 	qdecoder *schema.Decoder,
 	validate *validator.Validate,
-
+	forcer *authorize.Enforcer,
 ) *TeamApi {
 	return &TeamApi{
-		auth:     auth,
 		db:       db,
 		qdecoder: qdecoder,
 		validate: validate,
+		forcer:   forcer,
 	}
 }

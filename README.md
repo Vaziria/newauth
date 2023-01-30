@@ -11,6 +11,8 @@ up migration
 
 `go run cmd\goose.go down`
 
+# create documentation
+`swag init --parseDependency --parseInternal`
 
 
 

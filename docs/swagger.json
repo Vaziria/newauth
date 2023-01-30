@@ -39,6 +39,276 @@
                 }
             }
         },
+        "/authorize/info": {
+            "get": {
+                "description": "get info role user",
+                "tags": [
+                    "Role"
+                ],
+                "summary": "role",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/apis.RoleListResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/authorize/user": {
+            "post": {
+                "description": "set role untuk user",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "set role untuk user",
+                "parameters": [
+                    {
+                        "description": "set role untuk user",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/apis.SetRolePayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/apis.ApiResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/bot": {
+            "get": {
+                "description": "list bot",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Bot"
+                ],
+                "summary": "Untuk list Bot",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/apis.BotListRes"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update bot",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Bot"
+                ],
+                "summary": "Untuk Update Bot",
+                "parameters": [
+                    {
+                        "description": "create payload",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/apis.BotUpdatePayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/apis.ApiResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete bot",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Bot"
+                ],
+                "summary": "Untuk Delete Bot",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/apis.ApiResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/bot/create": {
+            "post": {
+                "description": "create bot",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Bot"
+                ],
+                "summary": "Untuk create Bot",
+                "parameters": [
+                    {
+                        "description": "create payload",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/apis.BotCreatePayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/apis.BotCreateRes"
+                        }
+                    }
+                }
+            }
+        },
+        "/bot_token": {
+            "get": {
+                "description": "list device",
+                "tags": [
+                    "token"
+                ],
+                "summary": "list device",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "teamID",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/apis.BTokenListRes"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "create token",
+                "tags": [
+                    "token"
+                ],
+                "summary": "create token",
+                "parameters": [
+                    {
+                        "description": "payload",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/apis.BTokenCreatePayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/apis.ApiResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "delete token",
+                "tags": [
+                    "token"
+                ],
+                "summary": "delete token",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "botID",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "name": "teamID",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "name": "tokenID",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/apis.ApiResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/bot_token/reset_device": {
+            "put": {
+                "description": "reset device",
+                "tags": [
+                    "token"
+                ],
+                "summary": "reset device",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "teamID",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "name": "tokenID",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/apis.ApiResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/login": {
             "post": {
                 "description": "Login user",
@@ -57,6 +327,56 @@
                         "required": true,
                         "schema": {
                             "$ref": "#/definitions/apis.LoginPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/apis.ApiResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/quota": {
+            "get": {
+                "description": "Info Quota",
+                "tags": [
+                    "quota"
+                ],
+                "summary": "Info Quota",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "id",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/apis.QuotaInfoRes"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Info Quota",
+                "tags": [
+                    "quota"
+                ],
+                "summary": "Info Quota",
+                "parameters": [
+                    {
+                        "description": "payload edit quota",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/apis.EditQuotaPayload"
                         }
                     }
                 ],
@@ -126,7 +446,148 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/apis.ResetPasswordRes"
+                            "$ref": "#/definitions/apis.ApiResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/search_user": {
+            "get": {
+                "description": "List User",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "List User",
+                "parameters": [
+                    {
+                        "description": "reset",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/apis.AcceptResetPassword"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/apis.ApiResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/team": {
+            "get": {
+                "description": "Remove User Dari Team",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Teams"
+                ],
+                "summary": "Remove User Dari Team",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/apis.LisTeamResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Remove User Dari Team",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Teams"
+                ],
+                "summary": "Remove User Dari Team",
+                "parameters": [
+                    {
+                        "description": "User Data",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/apis.TeamPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/apis.UpdateTeamResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "create team",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Teams"
+                ],
+                "summary": "Untuk create Team",
+                "parameters": [
+                    {
+                        "description": "User Data",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/apis.LoginPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/apis.CreateTeamResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Remove User Dari Team",
+                "tags": [
+                    "Teams"
+                ],
+                "summary": "Remove User Dari Team",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/apis.ApiResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/team/user": {
+            "delete": {
+                "description": "Remove User Dari Team",
+                "tags": [
+                    "Teams"
+                ],
+                "summary": "Remove User Dari Team",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/apis.ApiResponse"
                         }
                     }
                 }
@@ -162,6 +623,160 @@
                 }
             }
         },
+        "apis.BTokenCreatePayload": {
+            "type": "object",
+            "required": [
+                "bot_id",
+                "password",
+                "team_id",
+                "user_id"
+            ],
+            "properties": {
+                "bot_id": {
+                    "type": "integer"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "team_id": {
+                    "type": "integer"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "apis.BTokenListRes": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.BotToken"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "apis.BotCreatePayload": {
+            "type": "object",
+            "required": [
+                "desc",
+                "name"
+            ],
+            "properties": {
+                "desc": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "apis.BotCreateRes": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "$ref": "#/definitions/models.Bot"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "apis.BotListRes": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Bot"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "apis.BotUpdatePayload": {
+            "type": "object",
+            "required": [
+                "desc",
+                "id",
+                "name"
+            ],
+            "properties": {
+                "desc": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "apis.CreateTeamResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "$ref": "#/definitions/models.Team"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "apis.EditQuotaPayload": {
+            "type": "object",
+            "required": [
+                "quotas",
+                "team_id"
+            ],
+            "properties": {
+                "quotas": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Quota"
+                    }
+                },
+                "team_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "apis.LisTeamResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Team"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
         "apis.LoginPayload": {
             "type": "object",
             "properties": {
@@ -169,6 +784,23 @@
                     "type": "string"
                 },
                 "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "apis.QuotaInfoRes": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Quota"
+                    }
+                },
+                "message": {
                     "type": "string"
                 }
             }
@@ -181,28 +813,312 @@
                 }
             }
         },
-        "apis.ResetPasswordRes": {
+        "apis.RoleInfoData": {
+            "type": "object",
+            "properties": {
+                "can_set_role": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/authorize.RoleEnum"
+                    }
+                }
+            }
+        },
+        "apis.RoleListResponse": {
             "type": "object",
             "properties": {
                 "code": {
                     "type": "string"
                 },
                 "data": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "string"
-                    }
-                },
-                "key": {
-                    "type": "string"
+                    "$ref": "#/definitions/apis.RoleInfoData"
                 },
                 "message": {
                     "type": "string"
                 }
             }
         },
+        "apis.SetRolePayload": {
+            "type": "object",
+            "required": [
+                "action",
+                "role",
+                "user_id"
+            ],
+            "properties": {
+                "action": {
+                    "$ref": "#/definitions/authorize.RoleAct"
+                },
+                "role": {
+                    "$ref": "#/definitions/authorize.RoleEnum"
+                },
+                "team_id": {
+                    "type": "integer"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "apis.TeamPayload": {
+            "type": "object",
+            "required": [
+                "description",
+                "name"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "apis.UpdateTeamResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "$ref": "#/definitions/models.Team"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "authorize.RoleAct": {
+            "type": "string",
+            "enum": [
+                "set",
+                "unset"
+            ],
+            "x-enum-varnames": [
+                "RoleSet",
+                "RoleUnset"
+            ]
+        },
+        "authorize.RoleEnum": {
+            "type": "string",
+            "enum": [
+                "root",
+                "own",
+                "lead",
+                "dev",
+                "cs"
+            ],
+            "x-enum-varnames": [
+                "RootRole",
+                "OwnerRole",
+                "LeaderRole",
+                "DeviceRole",
+                "CsRole"
+            ]
+        },
+        "gorm.DeletedAt": {
+            "type": "object",
+            "properties": {
+                "time": {
+                    "type": "string"
+                },
+                "valid": {
+                    "description": "Valid is true if Time is not NULL",
+                    "type": "boolean"
+                }
+            }
+        },
+        "models.Bot": {
+            "type": "object",
+            "properties": {
+                "desc": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.BotToken": {
+            "type": "object",
+            "properties": {
+                "bot": {
+                    "$ref": "#/definitions/models.Bot"
+                },
+                "bot_id": {
+                    "type": "integer"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "device": {
+                    "$ref": "#/definitions/models.Device"
+                },
+                "device_id": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "last_login": {
+                    "type": "string"
+                },
+                "team": {
+                    "$ref": "#/definitions/models.Team"
+                },
+                "team_id": {
+                    "type": "integer"
+                },
+                "user": {
+                    "$ref": "#/definitions/models.User"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.Device": {
+            "type": "object",
+            "required": [
+                "hostname",
+                "macs",
+                "platform"
+            ],
+            "properties": {
+                "fingerprintID": {
+                    "type": "string"
+                },
+                "hostname": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "macs": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "platform": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Quota": {
+            "type": "object",
+            "properties": {
+                "bot": {
+                    "$ref": "#/definitions/models.Bot"
+                },
+                "botID": {
+                    "type": "integer"
+                },
+                "count": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "team": {
+                    "$ref": "#/definitions/models.Team"
+                },
+                "teamID": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.Team": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "quotas": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Quota"
+                    }
+                },
+                "users": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.User"
+                    }
+                }
+            }
+        },
         "models.User": {
-            "type": "object"
+            "type": "object",
+            "required": [
+                "email",
+                "name",
+                "password",
+                "username"
+            ],
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "lastReset": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "suspended": {
+                    "type": "boolean"
+                },
+                "teams": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Team"
+                    }
+                },
+                "token": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.BotToken"
+                    }
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                },
+                "verified": {
+                    "type": "boolean"
+                }
+            }
         }
     }
 }

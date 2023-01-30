@@ -7,27 +7,37 @@
 package newauth
 
 import (
+	"github.com/PDC-Repository/newauth/config"
 	"github.com/PDC-Repository/newauth/newauth/apis"
 	"github.com/PDC-Repository/newauth/newauth/authorize"
 	"github.com/PDC-Repository/newauth/newauth/services"
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/schema"
+	"gorm.io/gorm"
 )
 
 // Injectors from wire.go:
 
+func InitializeDatabase() *gorm.DB {
+	configConfig := config.NewConfig()
+	db := NewDatabase(configConfig)
+	return db
+}
+
 func InitializeApplication() (*Application, error) {
-	db := NewDatabase()
+	configConfig := config.NewConfig()
+	db := NewDatabase(configConfig)
 	mailService := services.NewMailService()
 	userApi := apis.NewUserApi(db, mailService)
-	authorizeAuthorize := authorize.NewAuthorize(db)
 	decoder := schema.NewDecoder()
 	validate := validator.New()
-	teamApi := apis.NewTeamApi(authorizeAuthorize, db, decoder, validate)
-	botApi := apis.NewBotApi(validate, db, decoder)
-	quotaApi := apis.NewQuotaApi(db)
-	authorizeApi := apis.NewAuthorizeApi(authorizeAuthorize, validate)
-	router, err := NewRouter(db, userApi, teamApi, botApi, quotaApi, authorizeApi)
+	enforcer := authorize.NewEnforcer(db)
+	teamApi := apis.NewTeamApi(db, decoder, validate, enforcer)
+	botApi := apis.NewBotApi(validate, db, enforcer, decoder)
+	quotaApi := apis.NewQuotaApi(db, enforcer, decoder, validate)
+	authorizeApi := apis.NewAuthorizeApi(validate, enforcer)
+	botTokenApi := apis.NewBotTokenApi(db, enforcer, decoder, validate)
+	router, err := NewRouter(db, userApi, teamApi, botApi, quotaApi, authorizeApi, botTokenApi)
 	if err != nil {
 		return nil, err
 	}

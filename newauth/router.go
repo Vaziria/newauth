@@ -15,6 +15,7 @@ func NewRouter(
 	botApi *apis.BotApi,
 	quotaApi *apis.QuotaApi,
 	authorizeApi *apis.AuthorizeApi,
+	tokenApi *apis.BotTokenApi,
 ) (*mux.Router, error) {
 
 	r := mux.NewRouter()
@@ -44,6 +45,12 @@ func NewRouter(
 	quotaR := r.PathPrefix("/quota").Subrouter()
 	quotaR.HandleFunc("", quotaApi.InfoQuota).Methods(http.MethodGet)
 	quotaR.HandleFunc("", quotaApi.EditQuota).Methods(http.MethodPut)
+
+	tokenR := r.PathPrefix("/bot_token").Subrouter()
+	tokenR.HandleFunc("", tokenApi.Create).Methods(http.MethodPost)
+	tokenR.HandleFunc("", tokenApi.Delete).Methods(http.MethodDelete)
+	tokenR.HandleFunc("", tokenApi.List).Methods(http.MethodGet)
+	tokenR.HandleFunc("/reset_device", tokenApi.ResetDevice).Methods(http.MethodPut)
 
 	return r, nil
 }

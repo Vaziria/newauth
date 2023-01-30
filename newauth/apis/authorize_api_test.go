@@ -13,7 +13,7 @@ import (
 
 func TestAuthorizeApi(t *testing.T) {
 
-	db := newauth.NewDatabase()
+	db := newauth.InitializeDatabase()
 	api, tearDownApp := scenario.NewPlainWebScenario()
 
 	rootUser, tRootuser := scenario.NewRoleUserScenario(db, authorize.RootRole)
@@ -26,7 +26,7 @@ func TestAuthorizeApi(t *testing.T) {
 
 	t.Run("test set role", func(t *testing.T) {
 		payload := apis.SetRolePayload{
-			Action: apis.RoleAddAction,
+			Action: authorize.RoleSet,
 			UserId: user.ID,
 			Role:   authorize.OwnerRole,
 			TeamId: 0,
@@ -52,7 +52,7 @@ func TestAuthorizeApi(t *testing.T) {
 
 	t.Run("test unset role", func(t *testing.T) {
 		payload := apis.SetRolePayload{
-			Action: apis.RoleDeleteAction,
+			Action: authorize.RoleUnset,
 			UserId: user.ID,
 			Role:   authorize.OwnerRole,
 			TeamId: 0,

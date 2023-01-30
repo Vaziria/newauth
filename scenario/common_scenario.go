@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/PDC-Repository/newauth/newauth"
@@ -176,18 +175,11 @@ func NewUserScenario(db *gorm.DB) UserScenario {
 func NewRoleUserScenario(db *gorm.DB, role authorize.RoleEnum) (*models.User, func()) {
 	scen := NewUserScenario(db)
 
-	auth := authorize.NewAuthorize(db)
+	forcer := authorize.NewEnforcer(db)
+	rootDomain := forcer.GetDomain(0)
 	user := scen.User
 
-	userstr := strconv.FormatUint(uint64(user.ID), 10)
-	cek, err := auth.Role.En.AddRoleForUser(userstr, string(role), authorize.ActRoleSet)
-
-	data := auth.UserCanSetRoleList(user.ID)
-	log.Println(cek, "asdasdasda", data, user.ID)
-
-	if err != nil {
-		log.Panicln(err)
-	}
+	rootDomain.AddUser(user.ID, role)
 
 	return user, func() {
 		scen.TearDown()

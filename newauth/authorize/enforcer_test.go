@@ -11,7 +11,8 @@ import (
 )
 
 func TestDomainEnforcer(t *testing.T) {
-	db, err := gorm.Open(postgres.Open(config.DatabaseUri), &gorm.Config{})
+	config := config.NewConfig()
+	db, err := gorm.Open(postgres.Open(config.Database), &gorm.Config{})
 
 	if err != nil {
 		panic(err)
@@ -36,19 +37,6 @@ func TestDomainEnforcer(t *testing.T) {
 
 		assert.True(t, dForcer.Access(ownerID, authorize.TeamResource, authorize.ActBasicWrite), "owner harus bisa akses ke child domain")
 		assert.False(t, dForcer.Access(guestID, authorize.TeamResource, authorize.ActBasicWrite), "guest tidak bisa akses ke child domain")
-
-		t.Run("test block owner user", func(t *testing.T) {
-			rForcer.BlockUser(blockOwnerID, authorize.OwnerRole)
-
-			assert.False(t, dForcer.Access(blockOwnerID, authorize.TeamResource, authorize.ActBasicWrite), "block owner tidak akses ke child domain")
-			assert.False(t, rForcer.Access(blockOwnerID, authorize.TeamResource, authorize.ActBasicWrite), "block owner tidak akses ke root domain")
-		})
-
-	})
-
-	t.Run("test block user in team", func(t *testing.T) {
-	})
-	t.Run("test delete domain", func(t *testing.T) {
 
 	})
 

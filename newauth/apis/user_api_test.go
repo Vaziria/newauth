@@ -54,7 +54,7 @@ func TestRegister(t *testing.T) {
 	}
 
 	defer func() {
-		db := newauth.NewDatabase()
+		db := newauth.InitializeDatabase()
 
 		var bekas models.User
 
@@ -72,7 +72,7 @@ func TestRegister(t *testing.T) {
 }
 
 func TestLogin(t *testing.T) {
-	db := newauth.NewDatabase()
+	db := newauth.InitializeDatabase()
 
 	user, deleteUser := setupUser(db)
 	defer deleteUser()

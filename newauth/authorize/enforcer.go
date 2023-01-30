@@ -2,10 +2,12 @@ package authorize
 
 import (
 	"log"
+	"sync"
 
 	"github.com/casbin/casbin/v2"
 	"github.com/casbin/casbin/v2/model"
 	gormadapter "github.com/casbin/gorm-adapter/v3"
+	"github.com/google/wire"
 	"gorm.io/gorm"
 )
 
@@ -35,7 +37,7 @@ const (
 type ActBasicEnum string
 
 const (
-	ActBasicAll    ActBasicEnum = "all"
+	ActBasicAppend ActBasicEnum = "append"
 	ActBasicWrite  ActBasicEnum = "write"
 	ActBasicUpdate ActBasicEnum = "update"
 	ActBasicDelete ActBasicEnum = "delete"
@@ -46,31 +48,14 @@ const (
 type ResourceEnum string
 
 const (
-	RoleResource    ResourceEnum = "role"
-	TeamResource    ResourceEnum = "team"
-	BotResource     ResourceEnum = "bot"
-	BlockerResource ResourceEnum = "block"
+	RoleResource     ResourceEnum = "role"
+	TeamResource     ResourceEnum = "team"
+	BotResource      ResourceEnum = "bot"
+	BotTokenResource ResourceEnum = "bottkn"
+	BlockerResource  ResourceEnum = "block"
+	UserResource     ResourceEnum = "user"
+	QuotaResource    ResourceEnum = "quota"
 )
-
-type RootResourcePolicy map[ResourceEnum][]ActBasicEnum
-type RootDomainPolicy map[RoleEnum]RootResourcePolicy
-
-type ResourcePolicy map[string][]ActBasicEnum
-type DomainPolicy map[RoleEnum]ResourcePolicy
-
-func NewRootDomainPolicy() *RootDomainPolicy {
-	return &RootDomainPolicy{
-		RootRole: RootResourcePolicy{
-			RoleResource: {ActBasicView, ActBasicDelete, ActBasicUpdate, ActBasicWrite},
-			TeamResource: {ActBasicView, ActBasicDelete, ActBasicUpdate, ActBasicWrite},
-			BotResource:  {ActBasicView, ActBasicDelete, ActBasicUpdate, ActBasicWrite},
-		},
-		OwnerRole: RootResourcePolicy{
-			TeamResource: {ActBasicView, ActBasicWrite},
-			BotResource:  {ActBasicView},
-		},
-	}
-}
 
 type Enforcer struct {
 	forcer *casbin.Enforcer
@@ -85,14 +70,6 @@ func (en *Enforcer) GetDomain(domainID uint) *DomainEnforcer {
 	}
 }
 
-// func (en *Enforcer) GetRootDomain() IDomainEnforcer {
-// 	return &RootDomainEnforcer{
-// 		ID:         0,
-// 		DomainName: string(RootDomain),
-// 		forcer:     en.forcer,
-// 	}
-// }
-
 func (en *Enforcer) DeleteDomain(domainID uint) {
 	forcer := en.forcer
 
@@ -103,8 +80,62 @@ func (en *Enforcer) DeleteDomain(domainID uint) {
 	}
 }
 
-func NewEnforcer(db *gorm.DB) *Enforcer {
-	tname := "domain_enforcer"
+func (en *Enforcer) InitiateRootDomainPolicies() {
+	domain := en.GetDomain(0)
+	policies := NewRootPolicies()
+
+	domain.AddResourcePolicies(BotResource, &DomainResourcePolicies{
+		RootRole: []ActBasicEnum{ActBasicWrite, ActBasicDelete, ActBasicUpdate, ActBasicView},
+	})
+
+	domain.AddResourcePolicies(QuotaResource, &DomainResourcePolicies{
+		RootRole: []ActBasicEnum{ActBasicWrite},
+	})
+
+	for sub, policies := range *policies {
+		for resource, actions := range policies {
+			for _, act := range actions {
+				_, err := domain.forcer.AddPolicy(string(sub), string(domain.DomainName), string(resource), string(act), string(AllowEffect))
+				if err != nil {
+					panic(err)
+				}
+			}
+		}
+	}
+
+}
+
+func (en *Enforcer) InitiateDomainPolicies(teamID uint) *DomainEnforcer {
+	domain := en.GetDomain(teamID)
+	domain.AddResourcePolicies(BotResource, &DomainResourcePolicies{
+		OwnerRole:  []ActBasicEnum{ActBasicView},
+		LeaderRole: []ActBasicEnum{ActBasicView},
+		DeviceRole: []ActBasicEnum{ActBasicView, ActBasicLogin},
+		CsRole:     []ActBasicEnum{ActBasicView},
+	})
+
+	domain.AddResourcePolicies(BotTokenResource, &DomainResourcePolicies{
+		OwnerRole:  []ActBasicEnum{ActBasicView, ActBasicUpdate, ActBasicDelete, ActBasicWrite},
+		LeaderRole: []ActBasicEnum{ActBasicView, ActBasicUpdate, ActBasicDelete, ActBasicWrite},
+	})
+
+	domain.AddResourcePolicies(TeamResource, &DomainResourcePolicies{
+		OwnerRole:  []ActBasicEnum{ActBasicView, ActBasicUpdate, ActBasicDelete},
+		LeaderRole: []ActBasicEnum{ActBasicView, ActBasicUpdate},
+	})
+
+	domain.AddResourcePolicies(UserResource, &DomainResourcePolicies{
+		OwnerRole:  []ActBasicEnum{ActBasicDelete, ActBasicWrite, ActBasicUpdate},
+		LeaderRole: []ActBasicEnum{ActBasicDelete, ActBasicWrite, ActBasicUpdate},
+		CsRole:     []ActBasicEnum{ActBasicView},
+	})
+	return domain
+}
+
+var once = sync.Once{}
+var enforcerSingle *Enforcer
+
+func CreateEnforcer(db *gorm.DB, tname string) *Enforcer {
 	adapt, err := gormadapter.NewAdapterByDBUseTableName(db, "casbin_", tname)
 	if err != nil {
 		log.Panicln("create adapter error")
@@ -124,9 +155,8 @@ func NewEnforcer(db *gorm.DB) *Enforcer {
 	e = some(where (p.eft == allow)) && !some(where (p.eft == deny))
 	
 	[matchers]
-	m = r.obj == p.obj && r.dom == p.dom && g(r.sub, p.sub, r.dom) || \
-	(r.obj == p.obj && g(r.sub, p.sub, "rdom")) && \
-	r.act == p.act
+	m = (r.obj == p.obj && r.act == p.act && r.dom == p.dom && g(r.sub, p.sub, r.dom)) || \
+	(r.obj == p.obj && r.act == p.act && p.dom == "rdom" && g(r.sub, p.sub, "rdom"))
 	`)
 
 	if err != nil {
@@ -143,8 +173,21 @@ func NewEnforcer(db *gorm.DB) *Enforcer {
 		forcer: forcer,
 	}
 
-	// root := enforcer.GetRootDomain()
-	// root.InitiatePolicies()
-
 	return &enforcer
 }
+
+func NewEnforcer(db *gorm.DB) *Enforcer {
+
+	once.Do(func() {
+		enforcer := CreateEnforcer(db, "domain_enforcer")
+		enforcer.InitiateRootDomainPolicies()
+
+		enforcerSingle = enforcer
+	})
+
+	return enforcerSingle
+}
+
+var AuthorizeSet = wire.NewSet(
+	NewEnforcer,
+)

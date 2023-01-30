@@ -9,33 +9,26 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-type RoleAction string
-
-const (
-	RoleDeleteAction RoleAction = "remove_role"
-	RoleAddAction    RoleAction = "add_role"
-)
-
 type AuthorizeApi struct {
-	Authorize *authorize.Authorize
-	validate  *validator.Validate
+	forcer   *authorize.Enforcer
+	validate *validator.Validate
 }
 
 type SetRolePayload struct {
-	Action RoleAction         `json:"action" binding:"required, enum"`
+	Action authorize.RoleAct  `json:"action" binding:"required, enum"`
 	UserId uint               `json:"user_id" validate:"required"`
 	Role   authorize.RoleEnum `json:"role" validate:"required"`
 	TeamId uint               `json:"team_id"`
 }
 
 // set role ... set role
-// @Summary set role untuk user
-// @Description set role untuk user
-// @Tags Users
-// @Accept json
-// @Param user body SetRolePayload true "set role untuk user"
-// @Success 200 {object} ApiResponse
-// @Router /authorize/user [post]
+//	@Summary		set role untuk user
+//	@Description	set role untuk user
+//	@Tags			Users
+//	@Accept			json
+//	@Param			user	body		SetRolePayload	true	"set role untuk user"
+//	@Success		200		{object}	ApiResponse
+//	@Router			/authorize/user [post]
 func (api *AuthorizeApi) SetRoleApi(w http.ResponseWriter, r *http.Request) {
 	var payload SetRolePayload
 	jwtData, err := JwtFromHttp(w, r)
@@ -63,21 +56,23 @@ func (api *AuthorizeApi) SetRoleApi(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-
-	switch payload.Action {
-	case RoleAddAction:
-		log.Println(jwtData.UserId, payload.UserId, payload.Role)
-		err = api.Authorize.UserSetRole(jwtData.UserId, payload.UserId, payload.Role)
-	case RoleDeleteAction:
-		err = api.Authorize.UserRemoveRole(jwtData.UserId, payload.UserId, payload.Role)
-	}
-
-	if err != nil {
-		SetResponse(http.StatusInternalServerError, w, &ApiResponse{
-			Code:    "set_role_error",
+	// checking access
+	rootForcer := api.forcer.GetDomain(0)
+	cek := rootForcer.AccessRole(jwtData.UserId, payload.Role, payload.Action)
+	if cek {
+		SetResponse(http.StatusUnauthorized, w, &ApiResponse{
+			Code:    "cannot_set_role",
 			Message: err.Error(),
 		})
 		return
+	}
+
+	switch payload.Action {
+	case authorize.RoleSet:
+		log.Println(jwtData.UserId, payload.UserId, payload.Role)
+		rootForcer.AddUser(payload.UserId, payload.Role)
+	case authorize.RoleUnset:
+		rootForcer.RemoveUser(payload.UserId, payload.Role)
 	}
 
 	SetSuccessResponse(w)
@@ -93,20 +88,21 @@ type RoleListResponse struct {
 }
 
 // info role ... info role
-// @Summary role
-// @Description get info role user
-// @Tags Role
-// @Success 200 {object} RoleListResponse
-// @Router /authorize/info [get]
+//	@Summary		role
+//	@Description	get info role user
+//	@Tags			Role
+//	@Success		200	{object}	RoleListResponse
+//	@Router			/authorize/info [get]
 func (api *AuthorizeApi) InfoRoleApi(w http.ResponseWriter, r *http.Request) {
-	jwtData, err := JwtFromHttp(w, r)
+	// jwtData, err := JwtFromHttp(w, r)
 
-	if err != nil {
-		log.Println(err)
-		return
-	}
+	// if err != nil {
+	// 	log.Println(err)
+	// 	return
+	// }
 
-	canSets := api.Authorize.UserCanSetRoleList(jwtData.UserId)
+	// canSets := api.Authorize.UserCanSetRoleList(jwtData.UserId)
+	canSets := []authorize.RoleEnum{}
 
 	SetResponse(http.StatusOK, w, &RoleListResponse{
 		Data: RoleInfoData{
@@ -118,10 +114,10 @@ func (api *AuthorizeApi) InfoRoleApi(w http.ResponseWriter, r *http.Request) {
 
 func (api *AuthorizeApi) SuspendedApi(w http.ResponseWriter, r *http.Request) {}
 
-func NewAuthorizeApi(athorize *authorize.Authorize, validator *validator.Validate) *AuthorizeApi {
+func NewAuthorizeApi(validator *validator.Validate, forcer *authorize.Enforcer) *AuthorizeApi {
 
 	return &AuthorizeApi{
-		Authorize: athorize,
-		validate:  validator,
+		validate: validator,
+		forcer:   forcer,
 	}
 }

@@ -18,6 +18,9 @@ func AutoMigrate(db *gorm.DB) {
 		&models.User{},
 		&models.Team{},
 		&models.UserTeam{},
+		&models.Bot{},
+		&models.Quota{},
+		&models.BotToken{},
 	)
 
 	if err != nil {
@@ -25,10 +28,10 @@ func AutoMigrate(db *gorm.DB) {
 	}
 }
 
-func NewDatabase() *gorm.DB {
+func NewDatabase(config *config.Config) *gorm.DB {
 	dbOnce.Do(func() {
 		log.Println("initialize database")
-		db, err := gorm.Open(postgres.Open(config.DatabaseUri), &gorm.Config{})
+		db, err := gorm.Open(postgres.Open(config.Database), &gorm.Config{})
 
 		if err != nil {
 			panic(err)
