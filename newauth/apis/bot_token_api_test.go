@@ -77,7 +77,8 @@ func TestBotTokenApi(t *testing.T) {
 
 		var data apis.BTokenCreateRes
 		json.NewDecoder(res.Result().Body).Decode(&data)
-		tokenid = data.Data.BotID
+		assert.NotEmpty(t, data.Data.ID)
+		tokenid = data.Data.ID
 	})
 
 	t.Run("test reset device", func(t *testing.T) {
@@ -97,6 +98,27 @@ func TestBotTokenApi(t *testing.T) {
 		u.RawQuery = q.Encode()
 		log.Println(u.String())
 		req := api.AuthenReq(owner, http.MethodPut, u.String(), nil)
+		res := api.GetRes(req)
+		t.Log("reset", res.Body)
+		assert.Equal(t, res.Result().StatusCode, http.StatusOK, "status harus 200")
+	})
+
+	t.Run("test list", func(t *testing.T) {
+		payload := apis.ListBTokenQuery{
+			TeamID: quota.TeamID,
+		}
+		rawpay := map[string][]string{}
+		encoder.Encode(&payload, rawpay)
+		u := url.URL{
+			Path: "/bot_token",
+		}
+		q := u.Query()
+		for key, val := range rawpay {
+			q.Set(key, val[0])
+		}
+		u.RawQuery = q.Encode()
+		log.Println(u.String())
+		req := api.AuthenReq(owner, http.MethodGet, u.String(), nil)
 		res := api.GetRes(req)
 		t.Log(res.Body)
 		assert.Equal(t, res.Result().StatusCode, http.StatusOK, "status harus 200")
@@ -120,27 +142,6 @@ func TestBotTokenApi(t *testing.T) {
 		u.RawQuery = q.Encode()
 		log.Println(u.String())
 		req := api.AuthenReq(owner, http.MethodDelete, u.String(), nil)
-		res := api.GetRes(req)
-		t.Log(res.Body)
-		assert.Equal(t, res.Result().StatusCode, http.StatusOK, "status harus 200")
-	})
-
-	t.Run("test list", func(t *testing.T) {
-		payload := apis.ListBTokenQuery{
-			TeamID: quota.TeamID,
-		}
-		rawpay := map[string][]string{}
-		encoder.Encode(&payload, rawpay)
-		u := url.URL{
-			Path: "/bot_token",
-		}
-		q := u.Query()
-		for key, val := range rawpay {
-			q.Set(key, val[0])
-		}
-		u.RawQuery = q.Encode()
-		log.Println(u.String())
-		req := api.AuthenReq(owner, http.MethodGet, u.String(), nil)
 		res := api.GetRes(req)
 		t.Log(res.Body)
 		assert.Equal(t, res.Result().StatusCode, http.StatusOK, "status harus 200")

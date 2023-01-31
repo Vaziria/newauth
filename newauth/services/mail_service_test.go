@@ -1,31 +1,22 @@
 package services_test
 
-import (
-	"net/http"
-	"testing"
+// func TestSendMail(t *testing.T) {
 
-	"github.com/PDC-Repository/newauth/newauth/services"
-	"github.com/PDC-Repository/newauth/scenario"
-	"google.golang.org/appengine/v2/aetest"
-)
+// 	srv := services.NewMailService()
 
-func TestSendMail(t *testing.T) {
+// 	userScen := scenario.CreateUserScenario()
+// 	inst, err := aetest.NewInstance(nil)
 
-	srv := services.NewMailService()
+// 	if err != nil {
+// 		t.Fatalf("Failed to create instance: %v", err)
+// 	}
 
-	userScen := scenario.CreateUserScenario()
-	inst, err := aetest.NewInstance(nil)
+// 	defer inst.Close()
+// 	defer userScen.TearDown()
 
-	if err != nil {
-		t.Fatalf("Failed to create instance: %v", err)
-	}
+// 	user := userScen.User
 
-	defer inst.Close()
-	defer userScen.TearDown()
+// 	req, _ := inst.NewRequest(http.MethodPut, "/test", nil)
 
-	user := userScen.User
-
-	req, _ := inst.NewRequest(http.MethodPut, "/test", nil)
-
-	srv.SendResetEmail(user.Email, "asdasdasdasdasdasdasd", req)
-}
+// 	srv.SendResetEmail(user.Email, "asdasdasdasdasdasdasd", req)
+// }

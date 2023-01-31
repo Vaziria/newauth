@@ -20,6 +20,13 @@ func NewRouter(
 
 	r := mux.NewRouter()
 
+	r.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {
+		apis.SetResponse(http.StatusOK, w, &apis.ApiResponse{
+			Code:    "success",
+			Message: "test success",
+		})
+	})
+
 	r.HandleFunc("/login", userApi.Login).Methods(http.MethodPost)
 	r.HandleFunc("/register", userApi.Register).Methods(http.MethodPost)
 	r.HandleFunc("/reset_pwd", userApi.ResetPassword).Methods(http.MethodPost)

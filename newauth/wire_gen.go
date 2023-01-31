@@ -7,7 +7,6 @@
 package newauth
 
 import (
-	"github.com/PDC-Repository/newauth/config"
 	"github.com/PDC-Repository/newauth/newauth/apis"
 	"github.com/PDC-Repository/newauth/newauth/authorize"
 	"github.com/PDC-Repository/newauth/newauth/services"
@@ -16,17 +15,19 @@ import (
 	"gorm.io/gorm"
 )
 
+import (
+	_ "github.com/GoogleCloudPlatform/cloudsql-proxy/proxy/dialers/postgres"
+)
+
 // Injectors from wire.go:
 
 func InitializeDatabase() *gorm.DB {
-	configConfig := config.NewConfig()
-	db := NewDatabase(configConfig)
+	db := NewDatabase()
 	return db
 }
 
 func InitializeApplication() (*Application, error) {
-	configConfig := config.NewConfig()
-	db := NewDatabase(configConfig)
+	db := NewDatabase()
 	mailService := services.NewMailService()
 	userApi := apis.NewUserApi(db, mailService)
 	decoder := schema.NewDecoder()

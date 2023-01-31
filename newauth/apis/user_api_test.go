@@ -13,7 +13,6 @@ import (
 	"github.com/PDC-Repository/newauth/newauth/models"
 	"github.com/PDC-Repository/newauth/scenario"
 	"github.com/stretchr/testify/assert"
-	"google.golang.org/appengine/v2/aetest"
 	"gorm.io/gorm"
 )
 
@@ -91,28 +90,19 @@ func TestLogin(t *testing.T) {
 }
 
 func TestCreateResetPassword(t *testing.T) {
-	inst, err := aetest.NewInstance(nil)
-
-	if err != nil {
-		t.Fatalf("Failed to create instance: %v", err)
-	}
-
+	api, Tapi := scenario.NewPlainWebScenario()
 	scen := scenario.CreateUserScenario()
-	webSchen := scenario.NewWebScenario()
-	webSchen.Inst = inst
-
+	defer Tapi()
 	defer scen.TearDown()
-	defer webSchen.TearDown()
-	defer inst.Close()
 
 	// oldpass := scen.User.Password
 	payload := apis.ResetPassword{
 		Email: scen.User.Email,
 	}
-
-	res := webSchen.Req(http.MethodPost, "/reset_pwd", payload)
-
-	code := res.Rec.Result().StatusCode
+	data := api.JsonToReader(payload)
+	req, _ := http.NewRequest(http.MethodPost, "/reset_pwd", data)
+	res := api.GetRes(req)
+	code := res.Result().StatusCode
 	assert.Equal(t, code, http.StatusOK, "status create error")
 
 	t.Run("testing accept reset password", func(t *testing.T) {
@@ -123,13 +113,14 @@ func TestCreateResetPassword(t *testing.T) {
 			Key:         key,
 			NewPassword: "kampret",
 		}
+		data := api.JsonToReader(payload)
+		req, _ := http.NewRequest(http.MethodPost, "/accept_reset_pwd", data)
+		res := api.GetRes(req)
 
-		res := webSchen.Req(http.MethodPost, "/accept_reset_pwd", &payload)
-
-		code := res.Rec.Result().StatusCode
+		code := res.Result().StatusCode
 
 		var datares apis.ApiResponse
-		res.Decode(&datares)
+		json.NewDecoder(res.Result().Body).Decode(&datares)
 
 		log.Println(datares)
 
@@ -140,20 +131,12 @@ func TestCreateResetPassword(t *testing.T) {
 }
 
 func TestUserList(t *testing.T) {
-	webSchen := scenario.NewWebScenario()
-	inst, err := aetest.NewInstance(nil)
+	api, Tapi := scenario.NewPlainWebScenario()
+	defer Tapi()
 
-	if err != nil {
-		t.Fatalf("Failed to create instance: %v", err)
-	}
-
-	webSchen.Inst = inst
-
-	defer webSchen.TearDown()
-
-	res := webSchen.Req(http.MethodGet, "/user_search", nil)
-
-	code := res.Rec.Result().StatusCode
+	req, _ := http.NewRequest(http.MethodGet, "/user_search", nil)
+	res := api.GetRes(req)
+	code := res.Result().StatusCode
 	assert.Equal(t, code, http.StatusOK, "success 200")
 
 }

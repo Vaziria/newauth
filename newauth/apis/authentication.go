@@ -53,7 +53,7 @@ func CreateResetPwdKey(user *models.User) string {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &pay)
 
-	tokenstring, err := token.SignedString(config.SecretKeyReset)
+	tokenstring, err := token.SignedString([]byte(config.Config.SecretKeyReset))
 
 	if err != nil {
 		log.Fatalln("tidak bisa create string reset", err)
@@ -69,7 +69,7 @@ func DecodeResetPwdKey(key string) *ResetPwdData {
 			return "", errors.New("gagal validate algorithm")
 		}
 		// hmacSampleSecret is a []byte containing your secret, e.g. []byte("my_secret_key")
-		return config.SecretKeyReset, nil
+		return []byte(config.Config.SecretKeyReset), nil
 	})
 
 	if err != nil {
@@ -93,7 +93,7 @@ func CreateToken(user *models.User) string {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, data)
 
-	tokenstring, err := token.SignedString(config.SecretKey)
+	tokenstring, err := token.SignedString([]byte(config.Config.SecreteKey))
 
 	if err != nil {
 		log.Fatalln("tidak bisa create string", err)
@@ -109,7 +109,7 @@ func DecodeToken(tokenstring string) (*JwtData, error) {
 			return "", errors.New("gagal validate algorithm")
 		}
 		// hmacSampleSecret is a []byte containing your secret, e.g. []byte("my_secret_key")
-		return config.SecretKey, nil
+		return []byte(config.Config.SecreteKey), nil
 	})
 
 	if err != nil {

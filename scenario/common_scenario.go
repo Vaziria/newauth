@@ -16,7 +16,6 @@ import (
 	"github.com/PDC-Repository/newauth/newauth/models"
 	"github.com/glebarez/sqlite"
 	"github.com/google/uuid"
-	"google.golang.org/appengine/v2/aetest"
 	"gorm.io/gorm"
 )
 
@@ -35,36 +34,6 @@ func (res *ResResult) Decode(v any) {
 		panic("parse error")
 	}
 
-}
-
-type WebSchenario struct {
-	Scenario
-	app  *newauth.Application
-	Inst aetest.Instance
-}
-
-func (scen *WebSchenario) ExecuteReq(req *http.Request) *httptest.ResponseRecorder {
-	rr := httptest.NewRecorder()
-	scen.app.Router.ServeHTTP(rr, req)
-	return rr
-}
-
-func (scen *WebSchenario) Req(method string, path string, payload any) *ResResult {
-	var req *http.Request
-
-	if payload != nil {
-		data, _ := json.Marshal(&payload)
-		req, _ = scen.Inst.NewRequest(method, path, bytes.NewReader(data))
-	} else {
-
-		req, _ = scen.Inst.NewRequest(method, path, nil)
-	}
-
-	res := scen.ExecuteReq(req)
-
-	return &ResResult{
-		Rec: res,
-	}
 }
 
 type PlainWebSchenario struct {
@@ -108,24 +77,6 @@ func NewPlainWebScenario() (*PlainWebSchenario, func()) {
 		}, func() {
 
 		}
-}
-
-func NewWebScenario() *WebSchenario {
-
-	app, err := newauth.InitializeApplication()
-
-	if err != nil {
-		log.Panicln("create aplication error")
-	}
-	scen := WebSchenario{
-		app: app,
-	}
-
-	scen.TearDown = func() {
-		// inst.Close()
-	}
-
-	return &scen
 }
 
 type UserScenario struct {

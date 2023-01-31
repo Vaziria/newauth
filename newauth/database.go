@@ -4,6 +4,7 @@ import (
 	"log"
 	"sync"
 
+	_ "github.com/GoogleCloudPlatform/cloudsql-proxy/proxy/dialers/postgres"
 	"github.com/PDC-Repository/newauth/config"
 	"github.com/PDC-Repository/newauth/newauth/models"
 	"gorm.io/driver/postgres"
@@ -28,10 +29,22 @@ func AutoMigrate(db *gorm.DB) {
 	}
 }
 
-func NewDatabase(config *config.Config) *gorm.DB {
+func NewDatabase() *gorm.DB {
 	dbOnce.Do(func() {
 		log.Println("initialize database")
-		db, err := gorm.Open(postgres.Open(config.Database), &gorm.Config{})
+		var db *gorm.DB
+		var err error
+
+		if config.Config.DevMode {
+			db, err = gorm.Open(postgres.Open(config.Config.Database.CreateDsn()), &gorm.Config{})
+		} else {
+			db, err = gorm.Open(postgres.New(
+				postgres.Config{
+					DriverName: "cloudsqlpostgres",
+					DSN:        config.Config.Database.CreateDsn(),
+				}),
+			)
+		}
 
 		if err != nil {
 			panic(err)

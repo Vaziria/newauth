@@ -18,12 +18,18 @@ type QuotaApi struct {
 	forcer   *authorize.Enforcer
 }
 
+type QuotaPayload struct {
+	Limit int  `json:"limit" validate:"required"`
+	BotID uint `json:"bot_id" validate:"required"`
+}
+
 type EditQuotaPayload struct {
 	TeamID uint           `json:"team_id" validate:"required"`
-	Quotas []models.Quota `json:"quotas" validate:"required"`
+	Quotas []QuotaPayload `json:"quotas" validate:"required"`
 }
 
 // Info Quota ... Info Quota
+//
 //	@Summary		Info Quota
 //	@Description	Info Quota
 //	@Tags			quota
@@ -59,8 +65,39 @@ func (api *QuotaApi) EditQuota(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	team.Quotas = payload.Quotas
-	err = api.db.Save(&team).Error
+	err = api.db.Transaction(func(tx *gorm.DB) error {
+		quotaids := make([]uint, len(payload.Quotas))
+
+		for ind, qpay := range payload.Quotas {
+			var quota models.Quota
+			err := tx.Where(&models.Quota{BotID: qpay.BotID, TeamID: payload.TeamID}).First(&quota).Error
+			if err != nil {
+				quota = models.Quota{
+					TeamID: payload.TeamID,
+					BotID:  qpay.BotID,
+					Count:  0,
+					Limit:  qpay.Limit,
+				}
+				err := tx.Save(&quota).Error
+				if err != nil {
+					return err
+				}
+			}
+			quotaids[ind] = quota.ID
+			quota.Limit = qpay.Limit
+			err = tx.Save(&quota).Error
+			if err != nil {
+				return err
+			}
+		}
+		query := map[string]interface{}{"id": quotaids}
+		err := tx.Not(query).Where(&models.Quota{TeamID: payload.TeamID}).Delete(&models.Quota{}).Error
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
 	if err != nil {
 		SetResponse(http.StatusInternalServerError, w, &ApiResponse{Code: "update_quota_failed"})
 		return
@@ -79,6 +116,7 @@ type InfoQuotaQuery struct {
 }
 
 // Info Quota ... Info Quota
+//
 //	@Summary		Info Quota
 //	@Description	Info Quota
 //	@Tags			quota

@@ -7,7 +7,6 @@ import (
 	"github.com/PDC-Repository/newauth/newauth"
 	"github.com/PDC-Repository/newauth/newauth/apis"
 	"github.com/PDC-Repository/newauth/newauth/authorize"
-	"github.com/PDC-Repository/newauth/newauth/models"
 	"github.com/PDC-Repository/newauth/scenario"
 	"github.com/stretchr/testify/assert"
 )
@@ -15,19 +14,22 @@ import (
 func TestQuotaApi(t *testing.T) {
 	db := newauth.InitializeDatabase()
 	team, Tteam := scenario.NewTeam(db)
+	bot, Tbot := scenario.NewBot(db)
 	api, dApi := scenario.NewPlainWebScenario()
 	rootusr, dRootusr := scenario.NewRoleUserScenario(db, authorize.RootRole)
 	defer dRootusr()
 	defer dApi()
 	defer Tteam()
+	defer Tbot()
 
 	t.Run("test edit quota", func(t *testing.T) {
-		quota := models.Quota{
-			BotID: 1,
+		quota := apis.QuotaPayload{
+			BotID: bot.ID,
+			Limit: 10,
 		}
 		payload := apis.EditQuotaPayload{
 			TeamID: team.ID,
-			Quotas: []models.Quota{
+			Quotas: []apis.QuotaPayload{
 				quota,
 			},
 		}

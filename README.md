@@ -14,6 +14,9 @@ up migration
 # create documentation
 `swag init --parseDependency --parseInternal`
 
+# set dev config
+`set devconfig=D:/research/newauth/config.yaml`
+
 
 
 # unittest

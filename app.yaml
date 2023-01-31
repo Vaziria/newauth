@@ -1,2 +1,15 @@
 runtime: go119
 service: newauth
+
+automatic_scaling:
+  max_instances: 1
+
+app_engine_apis: true
+
+env_variables:
+  DB_USER: postgres
+  DB_PWD: Balikpapan1*
+  DB_NAME: auth
+  DB_HOST: "shopeepdc:asia-southeast2:pdcshopee"
+  SECRET_KEY: authpdcsecret
+  SECRET_KEY_RESET: authpdcsecretkey

@@ -11,8 +11,8 @@ import (
 )
 
 func TestDomainEnforcer(t *testing.T) {
-	config := config.NewConfig()
-	db, err := gorm.Open(postgres.Open(config.Database), &gorm.Config{})
+	dbstring := config.Config.Database.CreateDsn()
+	db, err := gorm.Open(postgres.Open(dbstring), &gorm.Config{})
 
 	if err != nil {
 		panic(err)

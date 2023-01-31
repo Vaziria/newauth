@@ -1,3 +1,7 @@
-database: "user=admin password=admin dbname=postgres sslmode=disable"
+database:
+  user: admin
+  pwd: admin
+  db_name: postgres
+  host: localhost
 secret_key: "newauth_secret_key_pdc_1235"
 secret_key_reset: "newauth_secret_key_pdc_1235_reset_password"

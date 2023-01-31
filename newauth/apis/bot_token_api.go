@@ -212,7 +212,7 @@ func (api *BotTokenApi) ResetDevice(w http.ResponseWriter, r *http.Request) {
 	var botToken models.BotToken
 	err = api.db.First(&botToken, query.TokenID).Error
 	if err != nil {
-		SetResponse(http.StatusUnauthorized, w, ApiResponse{
+		SetResponse(http.StatusInternalServerError, w, ApiResponse{
 			Code: "token_not_found",
 		})
 		return

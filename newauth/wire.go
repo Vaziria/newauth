@@ -4,7 +4,6 @@
 package newauth
 
 import (
-	"github.com/PDC-Repository/newauth/config"
 	"github.com/PDC-Repository/newauth/newauth/apis"
 	"github.com/PDC-Repository/newauth/newauth/authorize"
 	"github.com/PDC-Repository/newauth/newauth/services"
@@ -15,7 +14,7 @@ import (
 )
 
 func InitializeDatabase() *gorm.DB {
-	wire.Build(NewDatabase, config.NewConfig)
+	wire.Build(NewDatabase)
 	return &gorm.DB{}
 }
 
@@ -34,7 +33,6 @@ func InitializeApplication() (*Application, error) {
 		NewDatabase,
 		schema.NewDecoder,
 		validator.New,
-		config.NewConfig,
 	)
 
 	return &Application{}, nil
