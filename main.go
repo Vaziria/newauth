@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/PDC-Repository/newauth/newauth"
+	"github.com/gorilla/handlers"
 	"gorm.io/gorm"
 )
 
@@ -26,7 +27,9 @@ func main() {
 		panic(err)
 	}
 
+	originsOk := handlers.AllowedOrigins([]string{"*"})
+	corHandler := handlers.CORS(originsOk)(app.Router)
 	log.Println("starting server at 8081")
-	panic(http.ListenAndServe("127.0.0.1:8081", app.Router))
+	panic(http.ListenAndServe("127.0.0.1:8081", corHandler))
 
 }
