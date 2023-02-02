@@ -22,24 +22,33 @@ type LoginPayload struct {
 	Password string `json:"password"`
 }
 
+type RegisterPayload struct {
+	Name     string `json:"name" validate:"required"`
+	Email    string `json:"email" validate:"required"`
+	Phone    string `json:"phone"`
+	Username string `json:"username" validate:"required"`
+	Password string `json:"password" validate:"required"`
+}
+
 type RegisterResponse struct {
 	ApiResponse
 	Data models.User `json:"data"`
 }
 
 // Register User ... Register User
+//
 //	@Summary		Create new user based on paramters
 //	@Description	Create new user
 //	@Tags			Users
 //	@Accept			json
-//	@Param			user	body		models.User	true	"User Data"
+//	@Param			user	body		RegisterPayload	true	"User Data"
 //	@Success		200		{object}	object
 //	@Router			/register [post]
 func (api *UserApi) Register(w http.ResponseWriter, req *http.Request) {
-	var user models.User
+	var payload RegisterPayload
 
 	decoder := json.NewDecoder(req.Body)
-	err := decoder.Decode(&user)
+	err := decoder.Decode(&payload)
 
 	if err != nil {
 		res := ApiResponse{
@@ -49,7 +58,7 @@ func (api *UserApi) Register(w http.ResponseWriter, req *http.Request) {
 		SetResponse(http.StatusBadRequest, w, &res)
 	}
 
-	err = api.validate.Struct(user)
+	err = api.validate.Struct(payload)
 
 	if err != nil {
 		res := ApiResponse{
@@ -60,10 +69,19 @@ func (api *UserApi) Register(w http.ResponseWriter, req *http.Request) {
 		SetResponse(http.StatusBadRequest, w, &res)
 		return
 	}
-
-	pwd := models.HashPassword(user.Password)
-	user.Password = pwd
-
+	var user models.User
+	api.db.Where(&models.User{Email: payload.Email}).First(&user)
+	if user.ID != 0 {
+		SetResponse(http.StatusInternalServerError, w, ApiResponse{Code: "user_exists"})
+		return
+	}
+	user = models.User{
+		Name:     payload.Name,
+		Email:    payload.Email,
+		Phone:    payload.Phone,
+		Username: payload.Username,
+	}
+	user.SetPassword(payload.Password)
 	err = api.db.Create(&user).Error
 
 	if err != nil {
@@ -91,6 +109,7 @@ func (api *UserApi) Suspend(resp http.ResponseWriter, req *http.Request) {
 }
 
 // Login user ... Login user
+//
 //	@Summary		Login user
 //	@Description	Login user
 //	@Tags			Users
@@ -118,7 +137,7 @@ func (api *UserApi) Login(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	cek := models.CheckPasswordHash(payload.Password, user.Password)
+	cek := user.CheckPasswordHash(payload.Password)
 	if cek {
 		SetLoginUser(w, &user)
 		res := ApiResponse{
@@ -149,6 +168,7 @@ type ResetPasswordRes struct {
 }
 
 // Reset Password ... Reset Password
+//
 //	@Summary		Reset Password
 //	@Description	Reset Password Request pertama
 //	@Tags			Users
@@ -191,6 +211,7 @@ type AcceptResetPassword struct {
 }
 
 // Accept Reset Password ... Reset Password
+//
 //	@Summary		Reset Password
 //	@Description	Reset Password Request pertama
 //	@Tags			Users
@@ -228,9 +249,7 @@ func (api *UserApi) AcceptResetPassword(w http.ResponseWriter, req *http.Request
 		SetResponse(http.StatusInternalServerError, w, res)
 		return
 	}
-
-	cryptPassword := models.HashPassword(payload.NewPassword)
-	user.Password = cryptPassword
+	user.SetPassword(payload.NewPassword)
 
 	err = api.db.Save(&user).Error
 	if err != nil {
@@ -260,6 +279,7 @@ type searchUserListRes struct {
 }
 
 // List User ... List User
+//
 //	@Summary		List User
 //	@Description	List User
 //	@Tags			Users

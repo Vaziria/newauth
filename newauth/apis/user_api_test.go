@@ -26,14 +26,12 @@ func executeReq(req *http.Request) *httptest.ResponseRecorder {
 }
 
 func setupUser(db *gorm.DB) (*models.User, func()) {
-	pass := models.HashPassword("password")
-
 	user := models.User{
 		Name:     "standart",
 		Email:    "standart@gmail.com",
 		Username: "standart",
-		Password: pass,
 	}
+	user.SetPassword("password")
 
 	db.Create(&user)
 
@@ -49,8 +47,8 @@ func TestRegister(t *testing.T) {
 		Name:     "barokah",
 		Email:    "ngudirahayu@gmail.com",
 		Username: "baokah",
-		Password: "asdaasdasd",
 	}
+	user.SetPassword("asdaasdasd")
 
 	defer func() {
 		db := newauth.InitializeDatabase()
@@ -138,5 +136,7 @@ func TestUserList(t *testing.T) {
 	res := api.GetRes(req)
 	code := res.Result().StatusCode
 	assert.Equal(t, code, http.StatusOK, "success 200")
+
+	json.NewDecoder(res.Result().Body)
 
 }

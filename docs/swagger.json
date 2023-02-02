@@ -407,7 +407,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.User"
+                            "$ref": "#/definitions/apis.RegisterPayload"
                         }
                     }
                 ],
@@ -752,7 +752,7 @@
                 "quotas": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.Quota"
+                        "$ref": "#/definitions/apis.QuotaPayload"
                     }
                 },
                 "team_id": {
@@ -801,6 +801,47 @@
                     }
                 },
                 "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "apis.QuotaPayload": {
+            "type": "object",
+            "required": [
+                "bot_id",
+                "limit"
+            ],
+            "properties": {
+                "bot_id": {
+                    "type": "integer"
+                },
+                "limit": {
+                    "type": "integer"
+                }
+            }
+        },
+        "apis.RegisterPayload": {
+            "type": "object",
+            "required": [
+                "email",
+                "name",
+                "password",
+                "username"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "username": {
                     "type": "string"
                 }
             }
@@ -940,6 +981,12 @@
                 },
                 "name": {
                     "type": "string"
+                },
+                "quotas": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Quota"
+                    }
                 }
             }
         },
@@ -1066,7 +1113,6 @@
             "required": [
                 "email",
                 "name",
-                "password",
                 "username"
             ],
             "properties": {
@@ -1086,9 +1132,6 @@
                     "type": "string"
                 },
                 "name": {
-                    "type": "string"
-                },
-                "password": {
                     "type": "string"
                 },
                 "phone": {

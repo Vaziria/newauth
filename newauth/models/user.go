@@ -13,7 +13,7 @@ type User struct {
 	Email     string `json:"email" validate:"required"`
 	Phone     string
 	Username  string `json:"username" gorm:"unique" validate:"required"`
-	Password  string `json:"password" validate:"required"`
+	password  string
 	Suspended bool
 	Verified  bool `json:"verified"`
 	LastReset time.Time
@@ -22,6 +22,10 @@ type User struct {
 	Token []*BotToken `gorm:"constraint:OnUpdate:CASCADE, OnDelete:CASCADE"`
 
 	// UserAccess []UserPermission
+}
+
+func (usr *User) SetPassword(pwd string) {
+	usr.password = HashPassword(pwd)
 }
 
 func (user *User) TableName() string {
@@ -37,15 +41,15 @@ func (user *User) AllowedResetPwd() bool {
 
 }
 
+func (usr *User) CheckPasswordHash(password string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(usr.password), []byte(password))
+	return err == nil
+}
+
 func HashPassword(password string) string {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
 	if err != nil {
 		panic(err)
 	}
 	return string(bytes)
-}
-
-func CheckPasswordHash(password, hash string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
-	return err == nil
 }

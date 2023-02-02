@@ -415,7 +415,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.User"
+                            "$ref": "#/definitions/apis.RegisterPayload"
                         }
                     }
                 ],
@@ -760,7 +760,7 @@ const docTemplate = `{
                 "quotas": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/models.Quota"
+                        "$ref": "#/definitions/apis.QuotaPayload"
                     }
                 },
                 "team_id": {
@@ -809,6 +809,47 @@ const docTemplate = `{
                     }
                 },
                 "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "apis.QuotaPayload": {
+            "type": "object",
+            "required": [
+                "bot_id",
+                "limit"
+            ],
+            "properties": {
+                "bot_id": {
+                    "type": "integer"
+                },
+                "limit": {
+                    "type": "integer"
+                }
+            }
+        },
+        "apis.RegisterPayload": {
+            "type": "object",
+            "required": [
+                "email",
+                "name",
+                "password",
+                "username"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "username": {
                     "type": "string"
                 }
             }
@@ -948,6 +989,12 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string"
+                },
+                "quotas": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Quota"
+                    }
                 }
             }
         },
@@ -1074,7 +1121,6 @@ const docTemplate = `{
             "required": [
                 "email",
                 "name",
-                "password",
                 "username"
             ],
             "properties": {
@@ -1094,9 +1140,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "name": {
-                    "type": "string"
-                },
-                "password": {
                     "type": "string"
                 },
                 "phone": {

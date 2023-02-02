@@ -90,8 +90,6 @@ func generateUsername() string {
 }
 
 func NewUserScenario(db *gorm.DB) UserScenario {
-	pass := models.HashPassword("password")
-
 	idnya := generateUsername()
 
 	tgl := time.Now().AddDate(0, -1, 0)
@@ -100,9 +98,9 @@ func NewUserScenario(db *gorm.DB) UserScenario {
 		Name:      idnya,
 		Email:     idnya + "@gmail.com",
 		Username:  idnya,
-		Password:  pass,
 		LastReset: tgl,
 	}
+	user.SetPassword("password")
 
 	err := db.Create(&user).Error
 	if err != nil {

@@ -101,7 +101,7 @@ definitions:
     properties:
       quotas:
         items:
-          $ref: '#/definitions/models.Quota'
+          $ref: '#/definitions/apis.QuotaPayload'
         type: array
       team_id:
         type: integer
@@ -137,6 +137,34 @@ definitions:
         type: array
       message:
         type: string
+    type: object
+  apis.QuotaPayload:
+    properties:
+      bot_id:
+        type: integer
+      limit:
+        type: integer
+    required:
+    - bot_id
+    - limit
+    type: object
+  apis.RegisterPayload:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+      phone:
+        type: string
+      username:
+        type: string
+    required:
+    - email
+    - name
+    - password
+    - username
     type: object
   apis.ResetPassword:
     properties:
@@ -231,6 +259,10 @@ definitions:
         type: integer
       name:
         type: string
+      quotas:
+        items:
+          $ref: '#/definitions/models.Quota'
+        type: array
     type: object
   models.BotToken:
     properties:
@@ -324,8 +356,6 @@ definitions:
         type: string
       name:
         type: string
-      password:
-        type: string
       phone:
         type: string
       suspended:
@@ -347,7 +377,6 @@ definitions:
     required:
     - email
     - name
-    - password
     - username
     type: object
 host: localhost:5000
@@ -614,7 +643,7 @@ paths:
         name: user
         required: true
         schema:
-          $ref: '#/definitions/models.User'
+          $ref: '#/definitions/apis.RegisterPayload'
       responses:
         "200":
           description: OK
