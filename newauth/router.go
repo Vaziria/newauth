@@ -32,6 +32,9 @@ func NewRouter(
 	r.HandleFunc("/reset_pwd", userApi.ResetPassword).Methods(http.MethodPost)
 	r.HandleFunc("/accept_reset_pwd", userApi.AcceptResetPassword).Methods(http.MethodPost)
 
+	userR := r.PathPrefix("/user").Subrouter()
+	userR.HandleFunc("/info", userApi.Info).Methods(http.MethodGet)
+
 	authorizeR := r.PathPrefix("/authorize").Subrouter()
 	authorizeR.HandleFunc("/user", authorizeApi.SetRoleApi).Methods(http.MethodPost)
 	authorizeR.HandleFunc("/info", authorizeApi.InfoRoleApi).Methods(http.MethodGet)

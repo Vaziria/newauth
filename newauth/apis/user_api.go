@@ -320,6 +320,24 @@ func (api *UserApi) GetUserList(w http.ResponseWriter, req *http.Request) {
 
 }
 
+type InfoUserRes struct {
+	ApiResponse
+	Data models.User `json:"data"`
+}
+
+func (api *UserApi) Info(w http.ResponseWriter, r *http.Request) {
+	var user models.User
+	jwtData, err := JwtFromHttp(w, r)
+	if err != nil {
+		return
+	}
+	api.db.First(&user, jwtData.UserId)
+	SetResponse(http.StatusOK, w, InfoUserRes{
+		Data: user,
+	})
+
+}
+
 func NewUserApi(db *gorm.DB, mailsrv *services.MailService) *UserApi {
 
 	validate := validator.New()

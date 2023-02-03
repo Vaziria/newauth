@@ -44,32 +44,40 @@ func setupUser(db *gorm.DB) (*models.User, func()) {
 func TestRegister(t *testing.T) {
 	password := "asdaasdasd"
 	db := newauth.InitializeDatabase()
-	user := models.User{
+	payload := apis.RegisterPayload{
 		Name:     "barokah",
 		Email:    "ngudirahayu@gmail.com",
 		Username: "baokah",
+		Password: password,
 	}
-	user.SetPassword(password)
 
 	defer func() {
 
 		var bekas models.User
 
-		db.First(&bekas, "username = ?", user.Username)
+		db.First(&bekas, "username = ?", payload.Username)
 		db.Unscoped().Delete(&bekas)
 	}()
 
-	data, _ := json.Marshal(user)
+	data, _ := json.Marshal(payload)
 
 	req, _ := http.NewRequest(http.MethodPost, "/register", bytes.NewReader(data))
 
 	w := executeReq(req)
-
+	t.Log(w.Body)
 	assert.Equal(t, w.Result().StatusCode, 200, "status code error")
 
 	var cekUser models.User
-	db.Where(models.User{Email: user.Email}).First(&cekUser)
+	db.Where(models.User{Email: payload.Email}).First(&cekUser)
 	assert.True(t, cekUser.CheckPasswordHash(password))
+
+	t.Run("test getting info user", func(t *testing.T) {
+		api, Tapi := scenario.NewPlainWebScenario()
+		defer Tapi()
+		req := api.AuthenReq(&cekUser, http.MethodGet, "/user/info", nil)
+		res := api.GetRes(req)
+		assert.Equal(t, res.Result().StatusCode, 200)
+	})
 }
 
 func TestLogin(t *testing.T) {
