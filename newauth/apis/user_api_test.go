@@ -42,16 +42,16 @@ func setupUser(db *gorm.DB) (*models.User, func()) {
 }
 
 func TestRegister(t *testing.T) {
-
+	password := "asdaasdasd"
+	db := newauth.InitializeDatabase()
 	user := models.User{
 		Name:     "barokah",
 		Email:    "ngudirahayu@gmail.com",
 		Username: "baokah",
 	}
-	user.SetPassword("asdaasdasd")
+	user.SetPassword(password)
 
 	defer func() {
-		db := newauth.InitializeDatabase()
 
 		var bekas models.User
 
@@ -66,6 +66,10 @@ func TestRegister(t *testing.T) {
 	w := executeReq(req)
 
 	assert.Equal(t, w.Result().StatusCode, 200, "status code error")
+
+	var cekUser models.User
+	db.Where(models.User{Email: user.Email}).First(&cekUser)
+	assert.True(t, cekUser.CheckPasswordHash(password))
 }
 
 func TestLogin(t *testing.T) {

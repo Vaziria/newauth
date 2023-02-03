@@ -13,7 +13,7 @@ type User struct {
 	Email     string `json:"email" validate:"required"`
 	Phone     string
 	Username  string `json:"username" gorm:"unique" validate:"required"`
-	password  string
+	Password  string `json:"-"`
 	Suspended bool
 	Verified  bool `json:"verified"`
 	LastReset time.Time
@@ -25,7 +25,7 @@ type User struct {
 }
 
 func (usr *User) SetPassword(pwd string) {
-	usr.password = HashPassword(pwd)
+	usr.Password = HashPassword(pwd)
 }
 
 func (user *User) TableName() string {
@@ -42,7 +42,7 @@ func (user *User) AllowedResetPwd() bool {
 }
 
 func (usr *User) CheckPasswordHash(password string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(usr.password), []byte(password))
+	err := bcrypt.CompareHashAndPassword([]byte(usr.Password), []byte(password))
 	return err == nil
 }
 
