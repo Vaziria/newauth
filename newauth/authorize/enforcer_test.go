@@ -40,4 +40,8 @@ func TestDomainEnforcer(t *testing.T) {
 
 	})
 
+	t.Run("get role user info", func(t *testing.T) {
+
+	})
+
 }

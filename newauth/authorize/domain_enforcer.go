@@ -32,6 +32,17 @@ type DomainEnforcer struct {
 	forcer     *casbin.Enforcer
 }
 
+func (en *DomainEnforcer) GetRoleList(userID uint) []RoleEnum {
+	user := userString(userID)
+	data := en.forcer.GetRolesForUserInDomain(user, en.DomainName)
+	hasil := make([]RoleEnum, len(data))
+	for ind, val := range data {
+		hasil[ind] = RoleEnum(val)
+	}
+
+	return hasil
+}
+
 func (en *DomainEnforcer) AddDevice(deviceID uint, userID uint) {
 	device := deviceString(deviceID)
 	user := userString(userID)

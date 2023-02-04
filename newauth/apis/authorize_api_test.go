@@ -1,6 +1,7 @@
 package apis_test
 
 import (
+	"encoding/json"
 	"net/http"
 	"testing"
 
@@ -48,6 +49,14 @@ func TestAuthorizeApi(t *testing.T) {
 
 		t.Log(res.Body)
 		assert.Equal(t, res.Result().StatusCode, http.StatusOK, "get list")
+
+		t.Run("test check response", func(t *testing.T) {
+			var resdata apis.RoleInfoResponse
+			json.NewDecoder(res.Result().Body).Decode(&resdata)
+
+			assert.NotEmpty(t, resdata.Data.Roles)
+		})
+
 	})
 
 	t.Run("test unset role", func(t *testing.T) {

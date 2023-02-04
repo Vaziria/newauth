@@ -36,7 +36,7 @@ func InitializeApplication() (*Application, error) {
 	teamApi := apis.NewTeamApi(db, decoder, validate, enforcer)
 	botApi := apis.NewBotApi(validate, db, enforcer, decoder)
 	quotaApi := apis.NewQuotaApi(db, enforcer, decoder, validate)
-	authorizeApi := apis.NewAuthorizeApi(validate, enforcer)
+	authorizeApi := apis.NewAuthorizeApi(validate, enforcer, decoder)
 	botTokenApi := apis.NewBotTokenApi(db, enforcer, decoder, validate)
 	router, err := NewRouter(db, userApi, teamApi, botApi, quotaApi, authorizeApi, botTokenApi)
 	if err != nil {
