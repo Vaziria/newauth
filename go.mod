@@ -30,6 +30,7 @@ require (
 	github.com/mattn/go-isatty v0.0.16 // indirect
 	github.com/microsoft/go-mssqldb v0.18.0 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20200410134404-eec4a21b6bb0 // indirect
+	github.com/rs/cors v1.8.3 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect

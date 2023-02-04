@@ -1,7 +1,9 @@
 package newauth
 
 import (
+	"log"
 	"net/http"
+	"net/http/httputil"
 
 	"github.com/PDC-Repository/newauth/newauth/apis"
 	"github.com/gorilla/mux"
@@ -18,17 +20,27 @@ func NewRouter(
 	tokenApi *apis.BotTokenApi,
 ) (*mux.Router, error) {
 
+	// cors := handlers.CORS(
+	// 	handlers.AllowedHeaders([]string{"*"}),
+	// 	handlers.AllowedOrigins([]string{"https://dnv6m1.csb.app"}),
+	// 	handlers.AllowCredentials(),
+	// )
+
 	r := mux.NewRouter()
+	// r.Use(cors)
 
 	r.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {
-		apis.SetResponse(http.StatusOK, w, &apis.ApiResponse{
-			Code:    "success",
-			Message: "test success",
-		})
-	})
+		data, _ := httputil.DumpRequest(r, true)
+		log.Println(string(data))
+		// w.Header().Set("Access-Control-Allow-Private-Network", "true")
+		// w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.WriteHeader(200)
+		w.Write([]byte("asdasdasdasdasdasdasd"))
+
+	}).Methods(http.MethodGet, http.MethodPost, http.MethodOptions)
 
 	r.HandleFunc("/login", userApi.Login).Methods(http.MethodPost)
-	r.HandleFunc("/register", userApi.Register).Methods(http.MethodPost)
+	r.HandleFunc("/register", userApi.Register)
 	r.HandleFunc("/reset_pwd", userApi.ResetPassword).Methods(http.MethodPost)
 	r.HandleFunc("/accept_reset_pwd", userApi.AcceptResetPassword).Methods(http.MethodPost)
 

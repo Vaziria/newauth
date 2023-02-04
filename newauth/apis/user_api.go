@@ -56,6 +56,7 @@ func (api *UserApi) Register(w http.ResponseWriter, req *http.Request) {
 			Message: err.Error(),
 		}
 		SetResponse(http.StatusBadRequest, w, &res)
+		return
 	}
 
 	err = api.validate.Struct(payload)
@@ -91,13 +92,13 @@ func (api *UserApi) Register(w http.ResponseWriter, req *http.Request) {
 		}
 
 		SetResponse(http.StatusInternalServerError, w, &res)
+		return
 	}
 
 	res := RegisterResponse{
 		Data: user,
 	}
-
-	SetResponse(http.StatusOK, w, res)
+	SetResponse(http.StatusOK, w, &res)
 }
 
 func (api *UserApi) Update(resp http.ResponseWriter, req *http.Request) {

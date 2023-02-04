@@ -28,7 +28,23 @@ func main() {
 	}
 
 	originsOk := handlers.AllowedOrigins([]string{"*"})
-	corHandler := handlers.CORS(originsOk)(app.Router)
+	methodOk := handlers.AllowedMethods([]string{http.MethodPost, http.MethodGet, http.MethodPut, http.MethodDelete, http.MethodOptions})
+	headersOk := handlers.AllowedHeaders([]string{"content-type", "accept", "accept-language", "content-language"})
+
+	corHandler := handlers.CORS(originsOk, methodOk, headersOk, handlers.AllowCredentials())(app.Router)
+
+	// c := cors.New(cors.Options{
+	// 	AllowedOrigins:   []string{"*"},
+	// 	AllowedMethods:   []string{"*"},
+	// 	AllowedHeaders:   []string{"*"},
+	// 	AllowCredentials: true,
+	// 	// Enable Debugging for testing, consider disabling in production
+	// 	Debug: true,
+	// })
+
+	// // Insert the middleware
+	// handler := c.Handler(app.Router)
+
 	log.Println("starting server at 8081")
 	panic(http.ListenAndServe("127.0.0.1:8081", corHandler))
 
