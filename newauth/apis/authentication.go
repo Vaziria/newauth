@@ -156,8 +156,10 @@ func JwtFromHttp(w http.ResponseWriter, r *http.Request) (*JwtData, error) {
 func SetLoginUser(w http.ResponseWriter, user *models.User) {
 	token := CreateToken(user)
 	cookie := &http.Cookie{
-		Name:  "PD_T",
-		Value: token,
+		Name:     "PD_T",
+		Value:    token,
+		SameSite: http.SameSiteNoneMode,
+		Secure:   true,
 	}
 	http.SetCookie(w, cookie)
 
