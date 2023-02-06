@@ -3,19 +3,23 @@ package models
 import (
 	"time"
 
+	"github.com/PDC-Repository/newauth/newauth/authorize"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
 type User struct {
-	gorm.Model
-	Name      string `json:"name" validate:"required"`
-	Email     string `json:"email" validate:"required"`
+	authorize.User
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt gorm.DeletedAt `gorm:"index"`
+	Name      string         `json:"name" validate:"required"`
+	Email     string         `json:"email" validate:"required"`
 	Phone     string
 	Username  string `json:"username" gorm:"unique" validate:"required"`
 	Password  string `json:"-"`
 	Suspended bool
-	Verified  bool `json:"verified"`
+
 	LastReset time.Time
 
 	Teams []*Team     `gorm:"many2many:user_teams;"`

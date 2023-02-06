@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 
+	"github.com/PDC-Repository/newauth/config"
 	"github.com/PDC-Repository/newauth/newauth/apis"
 	"github.com/gorilla/mux"
 	"gorm.io/gorm"
@@ -18,6 +19,7 @@ func NewRouter(
 	quotaApi *apis.QuotaApi,
 	authorizeApi *apis.AuthorizeApi,
 	tokenApi *apis.BotTokenApi,
+	devApi *apis.DevApi,
 ) (*mux.Router, error) {
 
 	// cors := handlers.CORS(
@@ -73,6 +75,11 @@ func NewRouter(
 	tokenR.HandleFunc("", tokenApi.Delete).Methods(http.MethodDelete)
 	tokenR.HandleFunc("", tokenApi.List).Methods(http.MethodGet)
 	tokenR.HandleFunc("/reset_device", tokenApi.ResetDevice).Methods(http.MethodPut)
+
+	// router dev
+	if config.Config.DevMode {
+		// setup router
+	}
 
 	return r, nil
 }

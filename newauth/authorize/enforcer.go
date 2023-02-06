@@ -37,6 +37,7 @@ const (
 type ActBasicEnum string
 
 const (
+	ActBasicAll    ActBasicEnum = "all"
 	ActBasicAppend ActBasicEnum = "append"
 	ActBasicWrite  ActBasicEnum = "write"
 	ActBasicUpdate ActBasicEnum = "update"
@@ -48,6 +49,7 @@ const (
 type ResourceEnum string
 
 const (
+	AllResource      ResourceEnum = "all"
 	RoleResource     ResourceEnum = "role"
 	TeamResource     ResourceEnum = "team"
 	BotResource      ResourceEnum = "bot"
@@ -59,6 +61,24 @@ const (
 
 type Enforcer struct {
 	forcer *casbin.Enforcer
+	db     *gorm.DB
+}
+
+func (en *Enforcer) SetVerified(userID uint, verif bool) {
+	rootDomain := en.GetDomain(0)
+	if verif {
+		rootDomain.UserRemovePolicies(userID, &UserResourcePolicies{
+			AllResource: []ActBasicEnum{ActBasicAll},
+		}, DenyEffect)
+	} else {
+		rootDomain.UserAddPolicies(userID, &UserResourcePolicies{
+			AllResource: []ActBasicEnum{ActBasicAll},
+		}, DenyEffect)
+	}
+	err := en.db.Where(&User{ID: userID}).Updates(User{Verified: verif}).Error
+	if err != nil {
+		panic(err)
+	}
 }
 
 func (en *Enforcer) GetDomain(domainID uint) *DomainEnforcer {
@@ -155,8 +175,8 @@ func CreateEnforcer(db *gorm.DB, tname string) *Enforcer {
 	e = some(where (p.eft == allow)) && !some(where (p.eft == deny))
 	
 	[matchers]
-	m = (r.obj == p.obj && r.act == p.act && r.dom == p.dom && g(r.sub, p.sub, r.dom)) || \
-	(r.obj == p.obj && r.act == p.act && p.dom == "rdom" && g(r.sub, p.sub, "rdom"))
+	m = ( (r.act == p.act || p.act == "all") && (r.obj == p.obj || p.obj == "all") && r.dom == p.dom && g(r.sub, p.sub, r.dom)) || \
+	( (r.act == p.act || p.act == "all") && (r.obj == p.obj || p.obj == "all") && p.dom == "rdom" && g(r.sub, p.sub, "rdom"))
 	`)
 
 	if err != nil {
@@ -171,6 +191,7 @@ func CreateEnforcer(db *gorm.DB, tname string) *Enforcer {
 
 	enforcer := Enforcer{
 		forcer: forcer,
+		db:     db,
 	}
 
 	return &enforcer

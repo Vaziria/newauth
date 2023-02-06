@@ -49,4 +49,18 @@ func TestDomainEnforcerAccess(t *testing.T) {
 	assert.True(t, cek)
 	cek = teamForcer.Access(userid, authorize.BotResource, authorize.ActBasicWrite)
 	assert.True(t, cek)
+
+	t.Run("test check suspended user", func(t *testing.T) {
+		dforcer.UserAddPolicies(userid, &authorize.UserResourcePolicies{
+			authorize.AllResource: []authorize.ActBasicEnum{authorize.ActBasicAll},
+		}, authorize.DenyEffect)
+
+		defer dforcer.UserRemovePolicies(userid, &authorize.UserResourcePolicies{
+			authorize.AllResource: []authorize.ActBasicEnum{authorize.ActBasicAll},
+		}, authorize.DenyEffect)
+
+		cek = teamForcer.Access(userid, authorize.BotResource, authorize.ActBasicWrite)
+		assert.False(t, cek)
+
+	})
 }

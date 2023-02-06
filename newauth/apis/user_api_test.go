@@ -77,7 +77,13 @@ func TestRegister(t *testing.T) {
 		req := api.AuthenReq(&cekUser, http.MethodGet, "/user/info", nil)
 		res := api.GetRes(req)
 		assert.Equal(t, res.Result().StatusCode, 200)
+
+		t.Run("testing verified user", func(t *testing.T) {
+
+		})
+
 	})
+
 }
 
 func TestLogin(t *testing.T) {

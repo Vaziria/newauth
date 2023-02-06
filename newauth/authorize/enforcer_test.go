@@ -5,6 +5,7 @@ import (
 
 	"github.com/PDC-Repository/newauth/config"
 	"github.com/PDC-Repository/newauth/newauth/authorize"
+	"github.com/PDC-Repository/newauth/scenario"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -13,6 +14,10 @@ import (
 func TestDomainEnforcer(t *testing.T) {
 	dbstring := config.Config.Database.CreateDsn()
 	db, err := gorm.Open(postgres.Open(dbstring), &gorm.Config{})
+	userScen := scenario.CreateUserScenario()
+	defer userScen.TearDown()
+
+	owner := userScen.User
 
 	if err != nil {
 		panic(err)
@@ -22,9 +27,10 @@ func TestDomainEnforcer(t *testing.T) {
 	rForcer := forcer.GetDomain(0)
 	dForcer := forcer.GetDomain(1)
 
+	var ownerID uint = owner.ID
+
 	t.Run("test block access owner", func(t *testing.T) {
 
-		var ownerID uint = 10
 		var blockOwnerID uint = 12
 		var guestID uint = 11
 
@@ -40,8 +46,11 @@ func TestDomainEnforcer(t *testing.T) {
 
 	})
 
-	t.Run("get role user info", func(t *testing.T) {
-
+	t.Run("test set unverified", func(t *testing.T) {
+		forcer.SetVerified(ownerID, false)
+	})
+	t.Run("test set verified", func(t *testing.T) {
+		forcer.SetVerified(ownerID, true)
 	})
 
 }

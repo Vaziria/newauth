@@ -25,7 +25,7 @@ func deviceString(deviceID uint) string {
 }
 
 type DomainResourcePolicies map[RoleEnum][]ActBasicEnum
-
+type UserResourcePolicies map[ResourceEnum][]ActBasicEnum
 type DomainEnforcer struct {
 	ID         uint
 	DomainName string
@@ -106,6 +106,36 @@ func (en *DomainEnforcer) AccessRole(userID uint, resource RoleEnum, act RoleAct
 		return false
 	}
 	return ok
+}
+
+func (en *DomainEnforcer) UserAddPolicies(userID uint, policies *UserResourcePolicies, effect Effect) {
+	forcer := en.forcer
+	user := userString(userID)
+	for resource, actions := range *policies {
+		for _, action := range actions {
+			_, err := forcer.AddPolicies([][]string{
+				{string(user), en.DomainName, string(resource), string(action), string(effect)},
+			})
+			if err != nil {
+				panic(err)
+			}
+		}
+	}
+}
+
+func (en *DomainEnforcer) UserRemovePolicies(userID uint, policies *UserResourcePolicies, effect Effect) {
+	forcer := en.forcer
+	user := userString(userID)
+	for resource, actions := range *policies {
+		for _, action := range actions {
+			_, err := forcer.RemovePolicies([][]string{
+				{string(user), en.DomainName, string(resource), string(action), string(effect)},
+			})
+			if err != nil {
+				panic(err)
+			}
+		}
+	}
 }
 
 func (en *DomainEnforcer) AddResourcePolicies(resource ResourceEnum, policies *DomainResourcePolicies) {

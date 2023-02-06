@@ -29,6 +29,7 @@ type ConfigData struct {
 	Database       Database `yaml:"database"`
 	SecreteKey     string   `yaml:"secret_key"`
 	SecretKeyReset string   `yaml:"secret_key_reset"`
+	MailUrl        string   `yaml:"mail_url"`
 	DevMode        bool     `yaml:"dev_mode"`
 }
 

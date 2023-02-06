@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/PDC-Repository/newauth/newauth/authorize"
 	"github.com/PDC-Repository/newauth/newauth/models"
 	"github.com/PDC-Repository/newauth/newauth/services"
 	"github.com/go-playground/validator/v10"
@@ -13,8 +14,10 @@ import (
 
 type UserApi struct {
 	db       *gorm.DB
-	validate validator.Validate
+	qdecoder *schema.Decoder
+	validate *validator.Validate
 	mailSrv  *services.MailService
+	forcer   *authorize.Enforcer
 }
 
 type LoginPayload struct {
@@ -33,6 +36,35 @@ type RegisterPayload struct {
 type RegisterResponse struct {
 	ApiResponse
 	Data models.User `json:"data"`
+}
+
+type VerifQuery struct {
+	UserID   uint `schema:"user_id" validate:"required"`
+	Verified bool `schema:"verified" validate:"required"`
+}
+
+func (api *UserApi) SetVerif(w http.ResponseWriter, r *http.Request) {
+	jwtData, err := JwtFromHttp(w, r)
+	if err != nil {
+		return
+	}
+
+	var query VerifQuery
+	api.qdecoder.Decode(&query, r.URL.Query())
+	err = api.validate.Struct(&query)
+	if err != nil {
+		SetResponse(http.StatusBadRequest, w, &ApiResponse{Code: "query_error", Message: err.Error()})
+		return
+	}
+
+	rootDomain := api.forcer.GetDomain(0)
+	if rootDomain.Access(jwtData.UserId, authorize.UserResource, authorize.ActBasicWrite) {
+		SetResponse(http.StatusUnauthorized, w, &ApiResponse{Code: "access_denied", Message: err.Error()})
+		return
+	}
+
+	api.forcer.SetVerified(query.UserID, query.Verified)
+	SetResponse(http.StatusOK, w, &ApiResponse{Code: "success"})
 }
 
 // Register User ... Register User
@@ -83,7 +115,14 @@ func (api *UserApi) Register(w http.ResponseWriter, req *http.Request) {
 		Username: payload.Username,
 	}
 	user.SetPassword(payload.Password)
-	err = api.db.Create(&user).Error
+	err = api.db.Transaction(func(tx *gorm.DB) error {
+		err = tx.Create(&user).Error
+		if err != nil {
+			return err
+		}
+		api.forcer.SetVerified(user.ID, false)
+		return nil
+	})
 
 	if err != nil {
 		res := ApiResponse{
@@ -99,6 +138,10 @@ func (api *UserApi) Register(w http.ResponseWriter, req *http.Request) {
 		Data: user,
 	}
 	SetResponse(http.StatusOK, w, &res)
+}
+
+func (api *UserApi) Verify(w http.ResponseWriter, r *http.Request) {
+
 }
 
 func (api *UserApi) Update(resp http.ResponseWriter, req *http.Request) {
@@ -290,7 +333,6 @@ type searchUserListRes struct {
 //	@Router			/search_user [get]
 func (api *UserApi) GetUserList(w http.ResponseWriter, req *http.Request) {
 	var query UserListQuery
-
 	if err := schema.NewDecoder().Decode(&query, req.Form); err != nil {
 		SetError(w, &ApiResponse{
 			Code:    "query_error",
@@ -339,13 +381,19 @@ func (api *UserApi) Info(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func NewUserApi(db *gorm.DB, mailsrv *services.MailService) *UserApi {
-
-	validate := validator.New()
+func NewUserApi(
+	db *gorm.DB,
+	mailsrv *services.MailService,
+	forcer *authorize.Enforcer,
+	qdecoder *schema.Decoder,
+	validate *validator.Validate,
+) *UserApi {
 
 	return &UserApi{
 		db:       db,
-		validate: *validate,
+		validate: validate,
 		mailSrv:  mailsrv,
+		forcer:   forcer,
+		qdecoder: qdecoder,
 	}
 }
