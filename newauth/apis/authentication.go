@@ -12,7 +12,7 @@ import (
 
 type JwtData struct {
 	jwt.StandardClaims
-	UserId uint `json:"user_id"`
+	UserID uint `json:"user_id"`
 }
 
 type LoginApi struct{}
@@ -88,7 +88,7 @@ func DecodeResetPwdKey(key string) *ResetPwdData {
 
 func CreateToken(user *models.User) string {
 	data := JwtData{
-		UserId: user.ID,
+		UserID: user.ID,
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, data)

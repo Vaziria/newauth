@@ -53,4 +53,8 @@ func TestDomainEnforcer(t *testing.T) {
 		forcer.SetVerified(ownerID, true)
 	})
 
+	t.Run("test get can set role", func(t *testing.T) {
+		rForcer.RoleCanSet(ownerID)
+	})
+
 }

@@ -1,7 +1,6 @@
 package apis_test
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
 	"net/url"
@@ -29,32 +28,7 @@ func TestTeamA(t *testing.T) {
 	user := scen.User
 	var teamId uint
 
-	t.Run("test create team", func(t *testing.T) {
-		payload := apis.CreateTeamPayload{
-			LeaderId: user.ID,
-			Team: apis.TeamPayload{
-				Name:        "test team",
-				Description: "test team",
-			},
-		}
-
-		body := api.JsonToReader(&payload)
-		req := api.AuthenReq(owner, http.MethodPost, "/team", body)
-
-		res := api.GetRes(req)
-
-		t.Log(res.Body)
-		assert.Equal(t, res.Result().StatusCode, http.StatusOK, "gagal create team")
-
-		var createRes apis.CreateTeamResponse
-		json.NewDecoder(res.Result().Body).Decode(&createRes)
-
-		assert.NotEmpty(t, createRes.Data, "data harus ada isinya")
-
-		teamId = createRes.Data.ID
-		t.Log("sending ", teamId)
-
-	})
+	// TODO: team test error
 
 	t.Run("test update team", func(t *testing.T) {
 

@@ -61,7 +61,7 @@ func (api *AuthorizeApi) SetRoleApi(w http.ResponseWriter, r *http.Request) {
 	}
 	// checking access
 	rootForcer := api.forcer.GetDomain(0)
-	cek := rootForcer.AccessRole(jwtData.UserId, payload.Role, payload.Action)
+	cek := rootForcer.AccessRole(jwtData.UserID, payload.Role, payload.Action)
 	if cek {
 		SetResponse(http.StatusUnauthorized, w, &ApiResponse{
 			Code:    "cannot_set_role",
@@ -72,7 +72,7 @@ func (api *AuthorizeApi) SetRoleApi(w http.ResponseWriter, r *http.Request) {
 
 	switch payload.Action {
 	case authorize.RoleSet:
-		log.Println(jwtData.UserId, payload.UserId, payload.Role)
+		log.Println(jwtData.UserID, payload.UserId, payload.Role)
 		rootForcer.AddUser(payload.UserId, payload.Role)
 	case authorize.RoleUnset:
 		rootForcer.RemoveUser(payload.UserId, payload.Role)
@@ -82,7 +82,7 @@ func (api *AuthorizeApi) SetRoleApi(w http.ResponseWriter, r *http.Request) {
 }
 
 type RoleInfoData struct {
-	CanSetRole []authorize.RoleEnum `json:"can_set_role"`
+	CanSetRole []authorize.RoleEnum `json:"can_set_role"` // TODO: masih kosong
 	TeamID     uint                 `json:"team_id"`
 	Roles      []authorize.RoleEnum `json:"roles"`
 }
@@ -116,9 +116,8 @@ func (api *AuthorizeApi) InfoRoleApi(w http.ResponseWriter, r *http.Request) {
 	}
 
 	domain := api.forcer.GetDomain(query.TeamID)
-	roles := domain.GetRoleList(jwtData.UserId)
-	// canSets := api.Authorize.UserCanSetRoleList(jwtData.UserId)
-	canSets := []authorize.RoleEnum{}
+	roles := domain.GetRoleList(jwtData.UserID)
+	canSets := api.forcer.GetDomain(0).RoleCanSet(jwtData.UserID)
 
 	SetResponse(http.StatusOK, w, &RoleInfoResponse{
 		Data: RoleInfoData{

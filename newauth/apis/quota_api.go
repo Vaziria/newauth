@@ -50,7 +50,7 @@ func (api *QuotaApi) EditQuota(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	teamForcer := api.forcer.GetDomain(payload.TeamID)
-	access := teamForcer.Access(jwtData.UserId, authorize.BotResource, authorize.ActBasicUpdate)
+	access := teamForcer.Access(jwtData.UserID, authorize.BotResource, authorize.ActBasicUpdate)
 	if !access {
 		SetResponse(http.StatusUnauthorized, w, ApiResponse{
 			Code: "access_error",
@@ -138,7 +138,7 @@ func (api *QuotaApi) InfoQuota(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	teamForcer := api.forcer.GetDomain(query.TeamID)
-	access := teamForcer.Access(jwtData.UserId, authorize.BotResource, authorize.ActBasicView)
+	access := teamForcer.Access(jwtData.UserID, authorize.BotResource, authorize.ActBasicView)
 	if !access {
 		SetResponse(http.StatusUnauthorized, w, ApiResponse{
 			Code: "access_error",

@@ -169,3 +169,39 @@ func (en *DomainEnforcer) RemoveResourcePolicies(resource ResourceEnum, policies
 		}
 	}
 }
+
+func (en *DomainEnforcer) RoleCanSet(userID uint) []RoleEnum {
+	user := userString(userID)
+	data := en.forcer.GetPermissionsForUserInDomain(user, en.DomainName)
+	hasil := []RoleEnum{}
+
+	for _, val := range data {
+		add := func() {
+			cek := true
+			for _, ex := range hasil {
+				if ex == RoleEnum(val[2]) {
+					cek = false
+					break
+				}
+			}
+			if cek {
+				hasil = append(hasil, RoleEnum(val[2]))
+			}
+		}
+
+		switch val[2] {
+		case string(RootRole):
+			add()
+		case string(OwnerRole):
+			add()
+		case string(LeaderRole):
+			add()
+		case string(CsRole):
+			add()
+		}
+
+	}
+	log.Println(hasil)
+
+	return hasil
+}

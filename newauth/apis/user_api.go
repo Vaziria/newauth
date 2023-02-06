@@ -33,11 +33,6 @@ type RegisterPayload struct {
 	Password string `json:"password" validate:"required"`
 }
 
-type RegisterResponse struct {
-	ApiResponse
-	Data models.User `json:"data"`
-}
-
 type VerifQuery struct {
 	UserID   uint `schema:"user_id" validate:"required"`
 	Verified bool `schema:"verified" validate:"required"`
@@ -58,7 +53,7 @@ func (api *UserApi) SetVerif(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rootDomain := api.forcer.GetDomain(0)
-	if rootDomain.Access(jwtData.UserId, authorize.UserResource, authorize.ActBasicWrite) {
+	if rootDomain.Access(jwtData.UserID, authorize.UserResource, authorize.ActBasicWrite) {
 		SetResponse(http.StatusUnauthorized, w, &ApiResponse{Code: "access_denied", Message: err.Error()})
 		return
 	}
@@ -135,7 +130,7 @@ func (api *UserApi) Register(w http.ResponseWriter, req *http.Request) {
 	}
 
 	res := RegisterResponse{
-		Data: user,
+		Data: &user,
 	}
 	SetResponse(http.StatusOK, w, &res)
 }
@@ -374,7 +369,7 @@ func (api *UserApi) Info(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
-	api.db.First(&user, jwtData.UserId)
+	api.db.First(&user, jwtData.UserID)
 	SetResponse(http.StatusOK, w, InfoUserRes{
 		Data: user,
 	})

@@ -26,113 +26,9 @@ type TeamPayload struct {
 	Description string `json:"description" validate:"required"`
 }
 
-type CreateTeamPayload struct {
-	Payload
-	LeaderId uint        `json:"leader_id" validate:"required"`
-	Team     TeamPayload `json:"team" validate:"required"`
-}
-
 type CreateTeamResponse struct {
 	ApiResponse
 	Data models.Team `json:"data"`
-}
-
-// Create Team ... Create Team
-//	@Summary		Untuk create Team
-//	@Description	create team
-//	@Tags			Teams
-//	@Accept			json
-//	@Param			user	body		LoginPayload	true	"User Data"
-//	@Success		200		{object}	CreateTeamResponse
-//	@Router			/team [post]
-func (api *TeamApi) CreateTeam(w http.ResponseWriter, r *http.Request) {
-	var payload CreateTeamPayload
-
-	JwtData, err := JwtFromHttp(w, r)
-	if err != nil {
-		return
-	}
-
-	rootdomain := api.forcer.GetDomain(0)
-	ok := rootdomain.Access(JwtData.UserId, authorize.TeamResource, authorize.ActBasicWrite)
-
-	if !ok {
-		SetResponse(http.StatusUnauthorized, w, &ApiResponse{
-			Code: "cant_access_resource",
-		})
-		return
-	}
-
-	err = json.NewDecoder(r.Body).Decode(&payload)
-	if err != nil {
-		SetResponse(http.StatusBadRequest, w, &ApiResponse{
-			Code:    "parse_error",
-			Message: err.Error(),
-		})
-
-		return
-	}
-
-	err = api.validate.Struct(&payload)
-	if err != nil {
-		SetResponse(http.StatusBadRequest, w, &ApiResponse{
-			Code:    "validation_error",
-			Message: err.Error(),
-		})
-
-		return
-	}
-
-	tx := api.db.Begin()
-
-	team := models.Team{
-		Name:        payload.Team.Name,
-		Description: payload.Team.Description,
-	}
-
-	err = tx.Create(&team).Error
-
-	if err != nil {
-		SetResponse(http.StatusInternalServerError, w, &ApiResponse{
-			Code:    "create_failed",
-			Message: err.Error(),
-		})
-		tx.Rollback()
-		return
-	}
-
-	owerr := tx.Create(&models.UserTeam{
-		UserID: JwtData.UserId,
-		TeamID: team.ID,
-		Role:   authorize.OwnerRole,
-	}).Error
-
-	lerr := tx.Create(&models.UserTeam{
-		UserID: payload.LeaderId,
-		TeamID: team.ID,
-		Role:   authorize.LeaderRole,
-	}).Error
-
-	if lerr != nil || owerr != nil {
-
-		SetResponse(http.StatusInternalServerError, w, &ApiResponse{
-			Code:    "create user team error",
-			Message: lerr.Error() + owerr.Error(),
-		})
-		tx.Rollback()
-		return
-	}
-
-	teamDom := api.forcer.InitiateDomainPolicies(team.ID)
-
-	teamDom.AddUser(payload.LeaderId, authorize.LeaderRole)
-	teamDom.AddUser(JwtData.UserId, authorize.OwnerRole)
-
-	SetResponse(http.StatusOK, w, &CreateTeamResponse{
-		Data: team,
-	})
-
-	tx.Commit()
 }
 
 type TeamQuery struct {
@@ -147,6 +43,7 @@ type RemoveUserQuery struct {
 }
 
 // Remove User ... Remove User Dari Team
+//
 //	@Summary		Remove User Dari Team
 //	@Description	Remove User Dari Team
 //	@Tags			Teams
@@ -177,7 +74,7 @@ func (api *TeamApi) RemoveUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	teamForcer := api.forcer.GetDomain(query.TeamID)
-	ok := teamForcer.Access(JwtData.UserId, authorize.UserResource, authorize.ActBasicDelete)
+	ok := teamForcer.Access(JwtData.UserID, authorize.UserResource, authorize.ActBasicDelete)
 	if !ok {
 		SetResponse(http.StatusUnauthorized, w, &ApiResponse{
 			Code: "cant_access_resource",
@@ -214,6 +111,7 @@ func (api *TeamApi) RemoveUser(w http.ResponseWriter, r *http.Request) {
 }
 
 // Remove User ... Remove User Dari Team
+//
 //	@Summary		Remove User Dari Team
 //	@Description	Remove User Dari Team
 //	@Tags			Teams
@@ -244,7 +142,7 @@ func (api *TeamApi) DeleteTeam(w http.ResponseWriter, r *http.Request) {
 	}
 
 	teamForcer := api.forcer.GetDomain(query.TeamID)
-	ok := teamForcer.Access(JwtData.UserId, authorize.TeamResource, authorize.ActBasicDelete)
+	ok := teamForcer.Access(JwtData.UserID, authorize.TeamResource, authorize.ActBasicDelete)
 	if !ok {
 		SetResponse(http.StatusUnauthorized, w, &ApiResponse{
 			Code: "cant_access_resource",
@@ -282,6 +180,7 @@ type UpdateTeamResponse struct {
 }
 
 // Remove User ... Remove User Dari Team
+//
 //	@Summary		Remove User Dari Team
 //	@Description	Remove User Dari Team
 //	@Tags			Teams
@@ -334,7 +233,7 @@ func (api *TeamApi) UpdateTeam(w http.ResponseWriter, r *http.Request) {
 	}
 
 	teamForcer := api.forcer.GetDomain(query.TeamID)
-	ok := teamForcer.Access(JwtData.UserId, authorize.TeamResource, authorize.ActBasicUpdate)
+	ok := teamForcer.Access(JwtData.UserID, authorize.TeamResource, authorize.ActBasicUpdate)
 	if !ok {
 		SetResponse(http.StatusUnauthorized, w, &ApiResponse{
 			Code: "cant_access_resource",
@@ -381,6 +280,7 @@ type LisTeamResponse struct {
 }
 
 // Remove User ... Remove User Dari Team
+//
 //	@Summary		Remove User Dari Team
 //	@Description	Remove User Dari Team
 //	@Tags			Teams
@@ -394,7 +294,7 @@ func (api *TeamApi) ListTeam(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var user models.User
-	api.db.Preload("Teams").First(&user, JwtData.UserId)
+	api.db.Preload("Teams").First(&user, JwtData.UserID)
 
 	SetResponse(http.StatusOK, w, &LisTeamResponse{
 		Data: user.Teams,

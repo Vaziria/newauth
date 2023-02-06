@@ -29,6 +29,7 @@ type BotCreateRes struct {
 }
 
 // Create Bot ... Create Bot
+//
 //	@Summary		Untuk create Bot
 //	@Description	create bot
 //	@Tags			Bot
@@ -43,7 +44,7 @@ func (api *BotApi) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rootForcer := api.forcer.GetDomain(0)
-	access := rootForcer.Access(jwtData.UserId, authorize.BotResource, authorize.ActBasicWrite)
+	access := rootForcer.Access(jwtData.UserID, authorize.BotResource, authorize.ActBasicWrite)
 	if !access {
 		SetResponse(http.StatusUnauthorized, w, ApiResponse{
 			Code: "access_error",
@@ -85,6 +86,7 @@ type BotDeleteQuery struct {
 }
 
 // Delete Bot ... Delete Bot
+//
 //	@Summary		Untuk Delete Bot
 //	@Description	Delete bot
 //	@Tags			Bot
@@ -99,7 +101,7 @@ func (api *BotApi) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rootForcer := api.forcer.GetDomain(0)
-	access := rootForcer.Access(jwtData.UserId, authorize.BotResource, authorize.ActBasicDelete)
+	access := rootForcer.Access(jwtData.UserID, authorize.BotResource, authorize.ActBasicDelete)
 	if !access {
 		SetResponse(http.StatusUnauthorized, w, ApiResponse{
 			Code: "access_error",
@@ -129,6 +131,7 @@ type BotUpdatePayload struct {
 }
 
 // Update Bot ... Update Bot
+//
 //	@Summary		Untuk Update Bot
 //	@Description	Update bot
 //	@Tags			Bot
@@ -143,7 +146,7 @@ func (api *BotApi) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rootForcer := api.forcer.GetDomain(0)
-	access := rootForcer.Access(jwtData.UserId, authorize.BotResource, authorize.ActBasicUpdate)
+	access := rootForcer.Access(jwtData.UserID, authorize.BotResource, authorize.ActBasicUpdate)
 	if !access {
 		SetResponse(http.StatusUnauthorized, w, ApiResponse{
 			Code: "access_error",
@@ -190,6 +193,7 @@ type BotListRes struct {
 }
 
 // List Bot ... List Bot
+//
 //	@Summary		Untuk list Bot
 //	@Description	list bot
 //	@Tags			Bot
@@ -203,7 +207,7 @@ func (api *BotApi) List(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rootForcer := api.forcer.GetDomain(0)
-	access := rootForcer.Access(jwtData.UserId, authorize.BotResource, authorize.ActBasicView)
+	access := rootForcer.Access(jwtData.UserID, authorize.BotResource, authorize.ActBasicView)
 	if !access {
 		SetResponse(http.StatusUnauthorized, w, ApiResponse{
 			Code: "access_error",

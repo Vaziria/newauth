@@ -69,7 +69,7 @@ func (api *BotTokenApi) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	teamForcer := api.forcer.GetDomain(payload.TeamID)
-	access := teamForcer.Access(jwtData.UserId, authorize.BotTokenResource, authorize.ActBasicWrite)
+	access := teamForcer.Access(jwtData.UserID, authorize.BotTokenResource, authorize.ActBasicWrite)
 	if !access {
 		SetResponse(http.StatusUnauthorized, w, ApiResponse{
 			Code: "access_error",
@@ -144,7 +144,7 @@ func (api *BotTokenApi) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	teamForcer := api.forcer.GetDomain(query.TeamID)
-	access := teamForcer.Access(jwtData.UserId, authorize.BotTokenResource, authorize.ActBasicDelete)
+	access := teamForcer.Access(jwtData.UserID, authorize.BotTokenResource, authorize.ActBasicDelete)
 	if !access {
 		SetResponse(http.StatusUnauthorized, w, ApiResponse{
 			Code: "access_error",
@@ -202,7 +202,7 @@ func (api *BotTokenApi) ResetDevice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	teamForcer := api.forcer.GetDomain(query.TeamID)
-	access := teamForcer.Access(jwtData.UserId, authorize.BotTokenResource, authorize.ActBasicUpdate)
+	access := teamForcer.Access(jwtData.UserID, authorize.BotTokenResource, authorize.ActBasicUpdate)
 	if !access {
 		SetResponse(http.StatusUnauthorized, w, ApiResponse{
 			Code: "access_error",
@@ -260,7 +260,7 @@ func (api *BotTokenApi) List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	teamForcer := api.forcer.GetDomain(query.TeamID)
-	access := teamForcer.Access(jwtData.UserId, authorize.BotTokenResource, authorize.ActBasicView)
+	access := teamForcer.Access(jwtData.UserID, authorize.BotTokenResource, authorize.ActBasicView)
 	if !access {
 		SetResponse(http.StatusUnauthorized, w, ApiResponse{
 			Code: "access_error",
