@@ -20,8 +20,11 @@ type ReqContext struct {
 }
 
 func (ctx *ReqContext) getBodyPayload(payload any) error {
-	json.NewDecoder(ctx.r.Body).Decode(&payload)
-	err := ctx.validate.Struct(&payload)
+	err := json.NewDecoder(ctx.r.Body).Decode(payload)
+	if err != nil {
+		return err
+	}
+	err = ctx.validate.Struct(payload)
 	return err
 }
 

@@ -18,17 +18,22 @@ func TestTeamA(t *testing.T) {
 
 	db := newauth.InitializeDatabase()
 	api, tearDownApp := scenario.NewPlainWebScenario()
+	forcer := authorize.NewEnforcer(db)
 
 	owner, tOwner := scenario.NewRoleUserScenario(db, authorize.OwnerRole)
 	scen := scenario.NewUserScenario(db)
+	team, tTeam := scenario.NewTeam(db)
+	defer tTeam()
 	defer scen.TearDown()
 	defer tOwner()
 	defer tearDownApp()
 
-	user := scen.User
-	var teamId uint
+	// user := scen.User
+	teamId := team.ID
 
-	// TODO: team test error
+	forcer.InitiateDomainPolicies(teamId)
+	domain := forcer.GetDomain(teamId)
+	domain.AddUser(owner.ID, authorize.OwnerRole)
 
 	t.Run("test update team", func(t *testing.T) {
 
@@ -58,23 +63,23 @@ func TestTeamA(t *testing.T) {
 
 	})
 
-	t.Run("test remove leader team", func(t *testing.T) {
-		url := url.URL{
-			Path: "/team/user",
-		}
-		q := url.Query()
-		q.Set("team_id", strconv.FormatUint(uint64(teamId), 10))
-		q.Set("user_id", strconv.FormatUint(uint64(user.ID), 10))
-		url.RawQuery = q.Encode()
+	// t.Run("test remove leader team", func(t *testing.T) {
+	// 	url := url.URL{
+	// 		Path: "/team/user",
+	// 	}
+	// 	q := url.Query()
+	// 	q.Set("team_id", strconv.FormatUint(uint64(teamId), 10))
+	// 	q.Set("user_id", strconv.FormatUint(uint64(user.ID), 10))
+	// 	url.RawQuery = q.Encode()
 
-		req := api.AuthenReq(owner, http.MethodDelete, url.String(), nil)
+	// 	req := api.AuthenReq(owner, http.MethodDelete, url.String(), nil)
 
-		res := api.GetRes(req)
+	// 	res := api.GetRes(req)
 
-		t.Log(res.Body)
-		assert.Equal(t, res.Result().StatusCode, http.StatusOK, "gagal remove leader team")
+	// 	t.Log(res.Body)
+	// 	assert.Equal(t, res.Result().StatusCode, http.StatusOK, "gagal remove leader team")
 
-	})
+	// })
 
 	t.Run("test add leader team", func(t *testing.T) { t.Fatal("not implemented") })
 

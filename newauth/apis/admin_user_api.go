@@ -31,7 +31,7 @@ type CreateUserPayload struct {
 	Username          string             `json:"username" validate:"required"`
 	Password          string             `json:"password" validate:"required"`
 	Team              *TeamCreatePayload `json:"team"`
-	RecaptchaResponse string             `json:"g-recaptcha-response"`
+	RecaptchaResponse string             `json:"g-recaptcha-response" validate:"required"`
 }
 
 type RegisterResponse struct {
@@ -43,7 +43,7 @@ type RegisterResponse struct {
 
 func (api *UserApi) createUser(creatorID uint, payload *CreateUserPayload, tx *gorm.DB) (*models.User, userErrorEnum, error) {
 	var user models.User
-	if payload.Team != nil {
+	if payload.Team != nil && creatorID != 0 {
 		teampay := payload.Team
 
 		domain := api.forcer.GetDomain(teampay.TeamID)
@@ -157,13 +157,15 @@ func (api *UserApi) CreateUser(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	rootdomain := api.forcer.GetDomain(0)
-	ok := rootdomain.Access(jwtData.UserID, authorize.TeamResource, authorize.ActBasicWrite)
-	if !ok {
-		SetResponse(http.StatusUnauthorized, w, &ApiResponse{
-			Code: string(resourceForbidden),
-		})
-		return
+	if jwtData != nil {
+		rootdomain := api.forcer.GetDomain(0)
+		ok := rootdomain.Access(jwtData.UserID, authorize.TeamResource, authorize.ActBasicWrite)
+		if !ok {
+			SetResponse(http.StatusUnauthorized, w, &ApiResponse{
+				Code: string(resourceForbidden),
+			})
+			return
+		}
 	}
 
 	errorRes := ApiResponse{}
@@ -171,8 +173,10 @@ func (api *UserApi) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	err = api.db.Transaction(func(tx *gorm.DB) error {
 		var team models.Team
+		var creatorID uint = 0
 
-		if payload.Team != nil {
+		if payload.Team != nil && jwtData != nil {
+			creatorID = jwtData.UserID
 			teamdata, code, err := api.CreateTeam(jwtData.UserID, payload.Team, tx)
 			team = teamdata
 
@@ -182,7 +186,8 @@ func (api *UserApi) CreateUser(w http.ResponseWriter, r *http.Request) {
 				return err
 			}
 		}
-		user, tcode, err := api.createUser(jwtData.UserID, &payload, tx)
+
+		user, tcode, err := api.createUser(creatorID, &payload, tx)
 		if err != nil {
 			errorRes.Code = string(tcode)
 			errorRes.Message = err.Error()
