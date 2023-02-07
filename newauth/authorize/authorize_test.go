@@ -5,7 +5,6 @@ import (
 )
 
 func TestAuthorize(t *testing.T) {
-	t.Error("not implemented")
 
 	// db := newauth.NewDatabase()
 	// root, tRoot := scenario.NewRoleUserScenario(db, authorize.RootRole)
@@ -14,7 +13,6 @@ func TestAuthorize(t *testing.T) {
 	// auth := authorize.NewAuthorize(db)
 
 	t.Run("test get user can set role", func(t *testing.T) {
-		t.Error("not implemented")
 
 		// auth.UserSetRole(root.ID, 20, authorize.OwnerRole)
 

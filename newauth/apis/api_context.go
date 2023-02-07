@@ -47,9 +47,11 @@ func NewUserContext(db *gorm.DB, r *http.Request) (*UserContext, *userError) {
 			jwt = data
 		}
 	}
-	err := db.First(&user, jwt.UserID).Error
-	if err != nil {
-		errordata = userError{code: userNotFound, err: err}
+	if jwt != nil {
+		err := db.First(&user, jwt.UserID).Error
+		if err != nil {
+			errordata = userError{code: userNotFound, err: err}
+		}
 	}
 
 	return &userctx, &errordata

@@ -82,7 +82,7 @@ func (api *AuthorizeApi) SetRoleApi(w http.ResponseWriter, r *http.Request) {
 }
 
 type RoleInfoData struct {
-	CanSetRole []authorize.RoleEnum `json:"can_set_role"` // TODO: masih kosong
+	CanSetRole []authorize.RoleEnum `json:"can_set_role"`
 	TeamID     uint                 `json:"team_id"`
 	Roles      []authorize.RoleEnum `json:"roles"`
 }

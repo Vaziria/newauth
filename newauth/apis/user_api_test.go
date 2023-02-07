@@ -44,7 +44,9 @@ func setupUser(db *gorm.DB) (*models.User, func()) {
 func TestRegister(t *testing.T) {
 	password := "asdaasdasd"
 	db := newauth.InitializeDatabase()
-	payload := apis.RegisterPayload{
+	api, Tapi := scenario.NewPlainWebScenario()
+	defer Tapi()
+	payload := apis.CreateUserPayload{
 		Name:     "barokah",
 		Email:    "ngudirahayu@gmail.com",
 		Username: "baokah",
@@ -59,13 +61,13 @@ func TestRegister(t *testing.T) {
 		db.Unscoped().Delete(&bekas)
 	}()
 
-	data, _ := json.Marshal(payload)
+	t.Run("test register", func(t *testing.T) {
 
-	req, _ := http.NewRequest(http.MethodPost, "/register", bytes.NewReader(data))
-
-	w := executeReq(req)
-	t.Log(w.Body)
-	assert.Equal(t, w.Result().StatusCode, 200, "status code error")
+		data := api.JsonToReader(payload)
+		req := httptest.NewRequest(http.MethodPost, "/register", data)
+		res := api.GetRes(req)
+		assert.Equal(t, res.Result().StatusCode, 200, "status code error")
+	})
 
 	var cekUser models.User
 	db.Where(models.User{Email: payload.Email}).First(&cekUser)

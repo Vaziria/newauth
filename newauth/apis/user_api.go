@@ -25,14 +25,6 @@ type LoginPayload struct {
 	Password string `json:"password"`
 }
 
-type RegisterPayload struct {
-	Name     string `json:"name" validate:"required"`
-	Email    string `json:"email" validate:"required"`
-	Phone    string `json:"phone"`
-	Username string `json:"username" validate:"required"`
-	Password string `json:"password" validate:"required"`
-}
-
 type VerifQuery struct {
 	UserID   uint `schema:"user_id" validate:"required"`
 	Verified bool `schema:"verified" validate:"required"`
@@ -60,79 +52,6 @@ func (api *UserApi) SetVerif(w http.ResponseWriter, r *http.Request) {
 
 	api.forcer.SetVerified(query.UserID, query.Verified)
 	SetResponse(http.StatusOK, w, &ApiResponse{Code: "success"})
-}
-
-// Register User ... Register User
-//
-//	@Summary		Create new user based on paramters
-//	@Description	Create new user
-//	@Tags			Users
-//	@Accept			json
-//	@Param			user	body		RegisterPayload	true	"User Data"
-//	@Success		200		{object}	object
-//	@Router			/register [post]
-func (api *UserApi) Register(w http.ResponseWriter, req *http.Request) {
-	var payload RegisterPayload
-
-	decoder := json.NewDecoder(req.Body)
-	err := decoder.Decode(&payload)
-
-	if err != nil {
-		res := ApiResponse{
-			Code:    "decode_error",
-			Message: err.Error(),
-		}
-		SetResponse(http.StatusBadRequest, w, &res)
-		return
-	}
-
-	err = api.validate.Struct(payload)
-
-	if err != nil {
-		res := ApiResponse{
-			Code:    "validation_error",
-			Message: err.Error(),
-		}
-
-		SetResponse(http.StatusBadRequest, w, &res)
-		return
-	}
-	var user models.User
-	api.db.Where(&models.User{Email: payload.Email}).First(&user)
-	if user.ID != 0 {
-		SetResponse(http.StatusInternalServerError, w, ApiResponse{Code: "user_exists"})
-		return
-	}
-	user = models.User{
-		Name:     payload.Name,
-		Email:    payload.Email,
-		Phone:    payload.Phone,
-		Username: payload.Username,
-	}
-	user.SetPassword(payload.Password)
-	err = api.db.Transaction(func(tx *gorm.DB) error {
-		err = tx.Create(&user).Error
-		if err != nil {
-			return err
-		}
-		api.forcer.SetVerified(user.ID, false)
-		return nil
-	})
-
-	if err != nil {
-		res := ApiResponse{
-			Code:    "create_error",
-			Message: err.Error(),
-		}
-
-		SetResponse(http.StatusInternalServerError, w, &res)
-		return
-	}
-
-	res := RegisterResponse{
-		Data: &user,
-	}
-	SetResponse(http.StatusOK, w, &res)
 }
 
 func (api *UserApi) Verify(w http.ResponseWriter, r *http.Request) {

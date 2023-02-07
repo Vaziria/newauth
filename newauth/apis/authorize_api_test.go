@@ -55,6 +55,7 @@ func TestAuthorizeApi(t *testing.T) {
 			json.NewDecoder(res.Result().Body).Decode(&resdata)
 
 			assert.NotEmpty(t, resdata.Data.Roles)
+			assert.NotEmpty(t, resdata.Data.CanSetRole)
 		})
 
 	})
