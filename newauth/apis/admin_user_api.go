@@ -25,12 +25,13 @@ type TeamCreatePayload struct {
 }
 
 type CreateUserPayload struct {
-	Name     string             `json:"name" validate:"required"`
-	Email    string             `json:"email" validate:"required"`
-	Phone    string             `json:"phone"`
-	Username string             `json:"username" validate:"required"`
-	Password string             `json:"password" validate:"required"`
-	Team     *TeamCreatePayload `json:"team"`
+	Name              string             `json:"name" validate:"required"`
+	Email             string             `json:"email" validate:"required"`
+	Phone             string             `json:"phone"`
+	Username          string             `json:"username" validate:"required"`
+	Password          string             `json:"password" validate:"required"`
+	Team              *TeamCreatePayload `json:"team"`
+	RecaptchaResponse string             `json:"g-recaptcha-response"`
 }
 
 type RegisterResponse struct {
@@ -38,19 +39,8 @@ type RegisterResponse struct {
 	Data *models.User `json:"data"`
 }
 
-// Unit testing belum siap
+// TODO: Unit testing belum siap
 
-// TODO: captcha
-
-// Register User ... Register User
-//
-//	@Summary		Create new user based on paramters
-//	@Description	Create new user
-//	@Tags			Users
-//	@Accept			json
-//	@Param			user	body		CreateUserPayload	true	"User Data"
-//	@Success		200		{object}	object
-//	@Router			/register [post]
 func (api *UserApi) createUser(creatorID uint, payload *CreateUserPayload, tx *gorm.DB) (*models.User, userErrorEnum, error) {
 	var user models.User
 	if payload.Team != nil {
@@ -132,6 +122,17 @@ func (api *UserApi) CreateTeam(userID uint, payload *TeamCreatePayload, tx *gorm
 	return team, errcode, err
 }
 
+// TODO: captcha
+
+// Register User ... Register User
+//
+//	@Summary		Create new user based on paramters
+//	@Description	Create new user
+//	@Tags			Users
+//	@Accept			json
+//	@Param			user	body		CreateUserPayload	true	"User Data"
+//	@Success		200		{object}	object
+//	@Router			/register [post]
 func (api *UserApi) CreateUser(w http.ResponseWriter, r *http.Request) {
 	var payload CreateUserPayload
 	reqctx := CreateReqContext(r)
@@ -146,6 +147,14 @@ func (api *UserApi) CreateUser(w http.ResponseWriter, r *http.Request) {
 		}
 		SetResponse(http.StatusBadRequest, w, &res)
 		return
+	}
+
+	if !config.Config.DevMode {
+		err = api.VerifyCaptcha(payload.RecaptchaResponse)
+		if err != nil {
+			SetResponse(http.StatusBadRequest, w, &ApiResponse{Code: "captcha_error"})
+			return
+		}
 	}
 
 	rootdomain := api.forcer.GetDomain(0)

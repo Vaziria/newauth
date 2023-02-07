@@ -13,3 +13,5 @@ env_variables:
   DB_HOST: "shopeepdc:asia-southeast2:pdcshopee"
   SECRET_KEY: authpdcsecret
   SECRET_KEY_RESET: authpdcsecretkey
+  CAPTCHA_SECRET_KEY: 6LfKJ1wkAAAAANhLTSS4cWBhm5r7R0BlGIOM3VM2
+  CAPTCHA_ACTIVE: true

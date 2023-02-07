@@ -5,3 +5,6 @@ database:
   host: localhost
 secret_key: "newauth_secret_key_pdc_1235"
 secret_key_reset: "newauth_secret_key_pdc_1235_reset_password"
+captcha:
+  active: true
+  secret_key: 6LflZMQjAAAAAMx9rUVDklv8wgj6neEy9FD6F09u
