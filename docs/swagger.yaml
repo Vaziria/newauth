@@ -88,14 +88,28 @@ definitions:
     - id
     - name
     type: object
-  apis.CreateTeamResponse:
+  apis.CreateUserPayload:
     properties:
-      code:
+      email:
         type: string
-      data:
-        $ref: '#/definitions/models.Team'
-      message:
+      g-recaptcha-response:
         type: string
+      name:
+        type: string
+      password:
+        type: string
+      phone:
+        type: string
+      team:
+        $ref: '#/definitions/apis.TeamCreatePayload'
+      username:
+        type: string
+    required:
+    - email
+    - g-recaptcha-response
+    - name
+    - password
+    - username
     type: object
   apis.EditQuotaPayload:
     properties:
@@ -148,24 +162,6 @@ definitions:
     - bot_id
     - limit
     type: object
-  apis.RegisterPayload:
-    properties:
-      email:
-        type: string
-      name:
-        type: string
-      password:
-        type: string
-      phone:
-        type: string
-      username:
-        type: string
-    required:
-    - email
-    - name
-    - password
-    - username
-    type: object
   apis.ResetPassword:
     properties:
       email:
@@ -177,8 +173,14 @@ definitions:
         items:
           $ref: '#/definitions/authorize.RoleEnum'
         type: array
+      roles:
+        items:
+          $ref: '#/definitions/authorize.RoleEnum'
+        type: array
+      team_id:
+        type: integer
     type: object
-  apis.RoleListResponse:
+  apis.RoleInfoResponse:
     properties:
       code:
         type: string
@@ -201,6 +203,19 @@ definitions:
     - action
     - role
     - user_id
+    type: object
+  apis.TeamCreatePayload:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+      role:
+        $ref: '#/definitions/authorize.RoleEnum'
+      team_id:
+        type: integer
+    required:
+    - role
     type: object
   apis.TeamPayload:
     properties:
@@ -412,7 +427,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/apis.RoleListResponse'
+            $ref: '#/definitions/apis.RoleInfoResponse'
       summary: role
       tags:
       - Role
@@ -643,7 +658,7 @@ paths:
         name: user
         required: true
         schema:
-          $ref: '#/definitions/apis.RegisterPayload'
+          $ref: '#/definitions/apis.CreateUserPayload'
       responses:
         "200":
           description: OK
@@ -713,25 +728,6 @@ paths:
           schema:
             $ref: '#/definitions/apis.LisTeamResponse'
       summary: Remove User Dari Team
-      tags:
-      - Teams
-    post:
-      consumes:
-      - application/json
-      description: create team
-      parameters:
-      - description: User Data
-        in: body
-        name: user
-        required: true
-        schema:
-          $ref: '#/definitions/apis.LoginPayload'
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/apis.CreateTeamResponse'
-      summary: Untuk create Team
       tags:
       - Teams
     put:

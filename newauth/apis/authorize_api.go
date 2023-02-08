@@ -101,7 +101,7 @@ type RoleInfoResponse struct {
 //	@Summary		role
 //	@Description	get info role user
 //	@Tags			Role
-//	@Success		200	{object}	RoleListResponse
+//	@Success		200	{object}	RoleInfoResponse
 //	@Router			/authorize/info [get]
 func (api *AuthorizeApi) InfoRoleApi(w http.ResponseWriter, r *http.Request) {
 	jwtData, err := JwtFromHttp(w, r)

@@ -58,7 +58,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/apis.RoleListResponse"
+                            "$ref": "#/definitions/apis.RoleInfoResponse"
                         }
                     }
                 }
@@ -415,7 +415,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/apis.RegisterPayload"
+                            "$ref": "#/definitions/apis.CreateUserPayload"
                         }
                     }
                 ],
@@ -535,35 +535,6 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/apis.UpdateTeamResponse"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "description": "create team",
-                "consumes": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Teams"
-                ],
-                "summary": "Untuk create Team",
-                "parameters": [
-                    {
-                        "description": "User Data",
-                        "name": "user",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/apis.LoginPayload"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/apis.CreateTeamResponse"
                         }
                     }
                 }
@@ -736,16 +707,35 @@ const docTemplate = `{
                 }
             }
         },
-        "apis.CreateTeamResponse": {
+        "apis.CreateUserPayload": {
             "type": "object",
+            "required": [
+                "email",
+                "g-recaptcha-response",
+                "name",
+                "password",
+                "username"
+            ],
             "properties": {
-                "code": {
+                "email": {
                     "type": "string"
                 },
-                "data": {
-                    "$ref": "#/definitions/models.Team"
+                "g-recaptcha-response": {
+                    "type": "string"
                 },
-                "message": {
+                "name": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "team": {
+                    "$ref": "#/definitions/apis.TeamCreatePayload"
+                },
+                "username": {
                     "type": "string"
                 }
             }
@@ -828,32 +818,6 @@ const docTemplate = `{
                 }
             }
         },
-        "apis.RegisterPayload": {
-            "type": "object",
-            "required": [
-                "email",
-                "name",
-                "password",
-                "username"
-            ],
-            "properties": {
-                "email": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string"
-                },
-                "phone": {
-                    "type": "string"
-                },
-                "username": {
-                    "type": "string"
-                }
-            }
-        },
         "apis.ResetPassword": {
             "type": "object",
             "properties": {
@@ -870,10 +834,19 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/authorize.RoleEnum"
                     }
+                },
+                "roles": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/authorize.RoleEnum"
+                    }
+                },
+                "team_id": {
+                    "type": "integer"
                 }
             }
         },
-        "apis.RoleListResponse": {
+        "apis.RoleInfoResponse": {
             "type": "object",
             "properties": {
                 "code": {
@@ -905,6 +878,26 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "apis.TeamCreatePayload": {
+            "type": "object",
+            "required": [
+                "role"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "role": {
+                    "$ref": "#/definitions/authorize.RoleEnum"
+                },
+                "team_id": {
                     "type": "integer"
                 }
             }
