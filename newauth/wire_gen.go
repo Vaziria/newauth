@@ -9,6 +9,7 @@ package newauth
 import (
 	"github.com/PDC-Repository/newauth/newauth/apis"
 	"github.com/PDC-Repository/newauth/newauth/authorize"
+	"github.com/PDC-Repository/newauth/newauth/devapis"
 	"github.com/PDC-Repository/newauth/newauth/services"
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/schema"
@@ -38,8 +39,8 @@ func InitializeApplication() (*Application, error) {
 	quotaApi := apis.NewQuotaApi(db, enforcer, decoder, validate)
 	authorizeApi := apis.NewAuthorizeApi(validate, enforcer, decoder)
 	botTokenApi := apis.NewBotTokenApi(db, enforcer, decoder, validate)
-	devApi := apis.NewDevApi(db, mailService, enforcer, decoder, validate)
-	router, err := NewRouter(db, userApi, teamApi, botApi, quotaApi, authorizeApi, botTokenApi, devApi)
+	devUserApi := devapis.NewDevUserApi(db, mailService, enforcer, decoder, validate)
+	router, err := NewRouter(db, userApi, teamApi, botApi, quotaApi, authorizeApi, botTokenApi, devUserApi)
 	if err != nil {
 		return nil, err
 	}

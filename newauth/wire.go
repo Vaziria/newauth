@@ -6,6 +6,7 @@ package newauth
 import (
 	"github.com/PDC-Repository/newauth/newauth/apis"
 	"github.com/PDC-Repository/newauth/newauth/authorize"
+	"github.com/PDC-Repository/newauth/newauth/devapis"
 	"github.com/PDC-Repository/newauth/newauth/services"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/wire"
@@ -28,7 +29,7 @@ func InitializeApplication() (*Application, error) {
 		apis.NewBotApi,
 		apis.NewQuotaApi,
 		apis.NewBotTokenApi,
-		apis.NewDevApi,
+		devapis.NewDevUserApi,
 		services.NewMailService,
 		authorize.AuthorizeSet,
 		NewDatabase,
