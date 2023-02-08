@@ -47,10 +47,10 @@ func TestDomainEnforcer(t *testing.T) {
 	})
 
 	t.Run("test set unverified", func(t *testing.T) {
-		forcer.SetVerified(ownerID, false)
+		forcer.SetVerified(ownerID, false, nil)
 	})
 	t.Run("test set verified", func(t *testing.T) {
-		forcer.SetVerified(ownerID, true)
+		forcer.SetVerified(ownerID, true, nil)
 	})
 
 	t.Run("test get can set role", func(t *testing.T) {

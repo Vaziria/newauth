@@ -70,9 +70,9 @@ func (api *UserApi) createUser(creatorID uint, payload *CreateUserPayload, tx *g
 	err := tx.Create(&user).Error
 
 	if config.Config.DevMode {
-		api.forcer.SetVerified(user.ID, true)
+		api.forcer.SetVerified(user.ID, true, tx)
 	} else {
-		api.forcer.SetVerified(user.ID, false)
+		api.forcer.SetVerified(user.ID, false, tx)
 	}
 
 	return &user, "success", err

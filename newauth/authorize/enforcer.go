@@ -64,7 +64,7 @@ type Enforcer struct {
 	db     *gorm.DB
 }
 
-func (en *Enforcer) SetVerified(userID uint, verif bool) {
+func (en *Enforcer) SetVerified(userID uint, verif bool, tx *gorm.DB) {
 	rootDomain := en.GetDomain(0)
 	if verif {
 		rootDomain.UserRemovePolicies(userID, &UserResourcePolicies{
@@ -75,7 +75,10 @@ func (en *Enforcer) SetVerified(userID uint, verif bool) {
 			AllResource: []ActBasicEnum{ActBasicAll},
 		}, DenyEffect)
 	}
-	err := en.db.Where(&User{ID: userID}).Updates(User{Verified: verif}).Error
+	if tx == nil {
+		tx = en.db
+	}
+	err := tx.Where(&User{ID: userID}).Updates(User{Verified: verif}).Error
 	if err != nil {
 		panic(err)
 	}

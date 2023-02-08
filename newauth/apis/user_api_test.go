@@ -83,7 +83,7 @@ func TestRegister(t *testing.T) {
 		assert.Equal(t, res.Result().StatusCode, 200)
 
 		t.Run("testing verified user", func(t *testing.T) {
-
+			assert.True(t, cekUser.Verified)
 		})
 
 	})

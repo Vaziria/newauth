@@ -7,6 +7,7 @@ import (
 
 	"github.com/PDC-Repository/newauth/config"
 	"github.com/PDC-Repository/newauth/newauth/apis"
+	"github.com/PDC-Repository/newauth/newauth/devapis"
 	"github.com/gorilla/mux"
 	"gorm.io/gorm"
 )
@@ -19,7 +20,8 @@ func NewRouter(
 	quotaApi *apis.QuotaApi,
 	authorizeApi *apis.AuthorizeApi,
 	tokenApi *apis.BotTokenApi,
-	devApi *apis.DevApi,
+	devApi *devapis.DevUserApi,
+
 ) (*mux.Router, error) {
 
 	// cors := handlers.CORS(
@@ -77,7 +79,7 @@ func NewRouter(
 
 	// router dev
 	if config.Config.DevMode {
-		// setup router
+		r.HandleFunc("/dev", devApi.Handler)
 	}
 
 	return r, nil

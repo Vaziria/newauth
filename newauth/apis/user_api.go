@@ -50,7 +50,7 @@ func (api *UserApi) SetVerif(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	api.forcer.SetVerified(query.UserID, query.Verified)
+	api.forcer.SetVerified(query.UserID, query.Verified, nil)
 	SetResponse(http.StatusOK, w, &ApiResponse{Code: "success"})
 }
 
