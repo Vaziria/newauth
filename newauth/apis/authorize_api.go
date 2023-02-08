@@ -117,7 +117,7 @@ func (api *AuthorizeApi) InfoRoleApi(w http.ResponseWriter, r *http.Request) {
 
 	domain := api.forcer.GetDomain(query.TeamID)
 	roles := domain.GetRoleList(jwtData.UserID)
-	canSets := api.forcer.GetDomain(0).RoleCanSet(jwtData.UserID)
+	canSets := api.forcer.GetDomain(query.TeamID).RoleCanSet(jwtData.UserID)
 
 	SetResponse(http.StatusOK, w, &RoleInfoResponse{
 		Data: RoleInfoData{

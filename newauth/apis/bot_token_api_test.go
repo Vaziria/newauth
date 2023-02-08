@@ -17,8 +17,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// TODO: unit test belum selesai
-
 func NewQuotaTeam(db *gorm.DB) (*models.Quota, func()) {
 	bot, Tbot := scenario.NewBot(db)
 	team, Tteam := scenario.NewTeam(db)
