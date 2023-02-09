@@ -63,6 +63,7 @@ func NewRouter(
 
 	botR := r.PathPrefix("/bot").Subrouter()
 	botR.HandleFunc("/create", botApi.Create).Methods(http.MethodPost)
+	botR.HandleFunc("/login", botApi.LoginBot).Methods(http.MethodPost)
 	botR.HandleFunc("", botApi.Update).Methods(http.MethodPut)
 	botR.HandleFunc("", botApi.Delete).Methods(http.MethodDelete)
 	botR.HandleFunc("", botApi.List).Methods(http.MethodGet)

@@ -22,6 +22,8 @@ func AutoMigrate(db *gorm.DB) {
 		&models.Bot{},
 		&models.Quota{},
 		&models.BotToken{},
+		&models.Device{},
+		&models.DevInterface{},
 	)
 
 	if err != nil {

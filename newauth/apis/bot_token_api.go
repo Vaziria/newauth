@@ -93,7 +93,6 @@ func (api *BotTokenApi) Create(w http.ResponseWriter, r *http.Request) {
 			TeamID:    payload.TeamID,
 			CreatedAt: time.Now(),
 			LastLog:   time.Now(),
-			DeviceID:  nil,
 		}
 		token.SetPwd(payload.Password)
 		err = tx.Save(&token).Error

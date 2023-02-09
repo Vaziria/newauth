@@ -1,6 +1,10 @@
 package models
 
-import "time"
+import (
+	"time"
+
+	"golang.org/x/crypto/bcrypt"
+)
 
 type BotToken struct {
 	ID uint `gorm:"primarykey" json:"id"`
@@ -10,10 +14,10 @@ type BotToken struct {
 	UserID   uint  `json:"user_id"`
 	TeamID   uint  `json:"team_id"`
 
-	secretPwd string
+	SecretPwd string `json:"-"`
 
 	LastLog   time.Time `json:"last_login"`
-	Device    *Device   `json:"device"`
+	Device    *Device   `json:"device" gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 	CreatedAt time.Time `json:"created_at"`
 
 	User User `json:"user"`
@@ -22,9 +26,10 @@ type BotToken struct {
 }
 
 func (t *BotToken) CheckPwd(pwd string) bool {
-	return t.secretPwd == HashPassword(pwd)
+	err := bcrypt.CompareHashAndPassword([]byte(t.SecretPwd), []byte(pwd))
+	return err == nil
 }
 
 func (t *BotToken) SetPwd(pwd string) {
-	t.secretPwd = HashPassword(pwd)
+	t.SecretPwd = HashPassword(pwd)
 }
