@@ -95,3 +95,11 @@ func TestTeamA(t *testing.T) {
 	})
 
 }
+
+func TestRootTeam(t *testing.T) {
+	t.Fatal("not implemented")
+}
+
+func TestOwnerTeam(t *testing.T) {
+	t.Fatal("raise not implemented")
+}

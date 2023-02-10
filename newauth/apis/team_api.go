@@ -2,6 +2,7 @@ package apis
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 
 	"github.com/PDC-Repository/newauth/newauth/authorize"
@@ -273,6 +274,7 @@ func (api *TeamApi) UpdateTeam(w http.ResponseWriter, r *http.Request) {
 }
 
 // TODO: adding model quota
+// TODO: list team owner
 
 type LisTeamResponse struct {
 	ApiResponse
@@ -288,17 +290,36 @@ type LisTeamResponse struct {
 //	@Accept			json
 //	@Router			/team [get]
 func (api *TeamApi) ListTeam(w http.ResponseWriter, r *http.Request) {
+	var hasil []*models.Team
 	JwtData, err := JwtFromHttp(w, r)
 	if err != nil {
 		return
 	}
 
-	var user models.User
-	api.db.Preload("Teams").First(&user, JwtData.UserID)
+	hasil, err = api.GetRootTeam(JwtData)
+	if err != nil {
+		var user models.User
+		api.db.Preload("Teams").First(&user, JwtData.UserID)
+		hasil = user.Teams
+	}
 
 	SetResponse(http.StatusOK, w, &LisTeamResponse{
-		Data: user.Teams,
+		Data: hasil,
 	})
+}
+
+func (api *TeamApi) GetRootTeam(jwt *JwtData) ([]*models.Team, error) {
+	var hasil []*models.Team
+	var err error
+
+	rdomain := api.forcer.GetDomain(0)
+	if !rdomain.Access(jwt.UserID, authorize.TeamResource, authorize.ActBasicView) {
+		return nil, errors.New("resource denied")
+	}
+
+	err = api.db.Find(&hasil).Error
+
+	return hasil, err
 
 }
 

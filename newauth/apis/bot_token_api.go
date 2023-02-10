@@ -21,6 +21,9 @@ type BotTokenApi struct {
 }
 
 //TODO: adding location
+// TODO: last login
+// TODO: filter, bot, user, keyword, device
+// TODO: version di payload
 
 type BTokenCreatePayload struct {
 	BotID    uint   `json:"bot_id" validate:"required"`

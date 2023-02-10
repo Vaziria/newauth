@@ -12,6 +12,9 @@ import (
 	"gorm.io/gorm"
 )
 
+// TODO: list api search by keyword
+// TODO: team, role
+
 type UserApi struct {
 	db       *gorm.DB
 	qdecoder *schema.Decoder
